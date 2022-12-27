@@ -1,109 +1,147 @@
 <script setup lang="ts">
-    /*
-        Функциональность
-        1) открытие/закрытие по пропсу
-        2) уведомление о закрытии по кнопке
-        3) при открытии загрузка настроек и списка галерей
-        4) при сохранении проверка валидности настроек
-        5) запись галереи и show_mode в настройки
-        6) в вотче очиста списка галерей, при закрытии
-    */
+/* TODO
+    Функциональность
+    2) если не выбрана галерея или show mode не сохранять настройки, в идеале показывать tooltip
+    3) рефактор кнопок для showMode
+*/
 
-    import api from '@/api';
-    import { GalleryShowMode, type PickerSettings, type Gallery } from '@/models';
-    import { ref, watch } from 'vue';
-    import { useSettingsStore } from '@/stores/settings';
+import api from '@/api';
+import { GalleryShowMode, type PickerSettings, type Gallery } from '@/models';
+import { nextTick, onMounted, ref, watch } from 'vue';
+import { useSettingsStore } from '@/stores/settings';
 
-    // props
-    const props = defineProps<{
-        isOpen: boolean
-    }>();
+// props
+const props = defineProps<{
+  modelValue: boolean
+}>();
 
-    // emits
-    const emit = defineEmits(["onSettingsSave", "onClose"]);
+// emits
+const emit = defineEmits(["update:modelValue"]);
 
-    // data
-    const settings = ref<PickerSettings>({selectedGallery:"", showMode:GalleryShowMode.All})
-    const galleries = ref<Gallery[]>([])
-    
-    // watch
-    watch(()=>props.isOpen, async (openValue) =>{
-        if (openValue) {
-            const [galls, settingsData] = await Promise.all([
-                api.getGalleries(), api.getSettings()
-            ]);
+interface GalleryEx extends Gallery {
+  showMode: GalleryShowMode
+}
 
-            settings.value = settingsData;
-            galleries.value = galls;
-        } else {
-            galleries.value = []
-        }
-    });
-    
-    // events
-    function handleGalleryClick(gallery_id:string) {
-        settings.value.selectedGallery = gallery_id
-    }
+// data
+const settings = ref<PickerSettings>({ selectedGallery: "", showMode: GalleryShowMode.All })
+const galleries = ref<GalleryEx[]>([])
 
-    async function handleSettingsSave() {
-        const settingsStore = useSettingsStore()
-        await settingsStore.saveSettings(settings.value);
-        
-        emit("onSettingsSave");
-    }
+// refs
+const sidenavRef = ref<HTMLElement | null>(null)
+
+function clickOutsideEventListener(e:MouseEvent) {
+  if (!sidenavRef.value) {
+    return
+  }
+  if (!sidenavRef.value.contains(e.target as HTMLElement)) {
+        emit('update:modelValue', false)
+      }
+}
+
+// watch
+watch(() => props.modelValue, async (openValue) => {
+  
+  if (openValue) {
+    const [galls, settingsData] = await Promise.all([
+      api.getGalleries(), api.getSettings()
+    ]);
+
+    settings.value = settingsData;
+    galleries.value = galls.map(g => ({ ...g, showMode: settings.value.showMode }));
+
+    await nextTick()
+
+    window.addEventListener("click", clickOutsideEventListener)
+  } else {
+    galleries.value = []
+    window.removeEventListener("click", clickOutsideEventListener)
+  }
+});
+
+// events
+function handleGalleryClick(gallery_id: string) {
+  settings.value.selectedGallery = gallery_id
+  settings.value.showMode = galleries.value.find((g) => g.slug === gallery_id)!.showMode
+}
+function handleShowModeButtonClick(gallery_id: string, showMode: GalleryShowMode) {
+  galleries.value.find((g) => g.slug === gallery_id)!.showMode = showMode;
+
+  settings.value.selectedGallery = gallery_id
+  settings.value.showMode = showMode
+
+}
+async function handleSettingsSave() {
+  if (!settings.value.selectedGallery) {
+    return
+  }
+  const settingsStore = useSettingsStore()
+  await settingsStore.saveSettings(settings.value);
+  emit('update:modelValue', false)
+}
 </script>
 
 <template>
-    <div class="sidenav" :class="{'sidenav-open':isOpen}">
-      <div class="sidenav-content">
-        <div class="sidenav-title">
-          <h2>Settings</h2>
-          <a href="#" class="closebtn" id="sidenavClose" @click="$emit('onClose')">&times;</a>
-        </div>
-        <div class="show-mode">
-          <span>Show:</span>
-          <select id="showMode" v-model="settings.showMode">
-            <option value="unmarked">Unmarked</option>
-            <option value="marked">Marked</option>
-            <option value="all">All</option>
-          </select>
-        </div>
-        <div class="galleries-container">
-          <a v-for="gallery in galleries" :key="gallery.slug"
-            :class="{selected: gallery.slug === settings.selectedGallery}"
-            @click="handleGalleryClick(gallery.slug)">{{gallery.title}}</a>
-        </div>
-        <a id="btnSave" @click="handleSettingsSave">Save</a>
+  <div class="sidenav" :class="{ 'sidenav-open': modelValue }" ref="sidenavRef">
+    <div class="sidenav-content">
+      <div class="sidenav-title">
+        <h2>Settings</h2>
+        <a href="#" class="closebtn" id="sidenavClose" @click="$emit('update:modelValue', false)">&times;</a>
       </div>
+      <div class="galleries-container">
+        <a v-for="gallery in galleries" :key="gallery.slug"
+          :class="{ selected: gallery.slug === settings.selectedGallery }">
+          <span @click="handleGalleryClick(gallery.slug)">{{ gallery.title }}</span>
+          <span>
+            <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Marked }"
+              @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Marked)">M</button>
+            <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Unmarked }"
+              @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Unmarked)"><s>M</s></button>
+            <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.All }"
+              @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.All)">*.*</button>
+          </span>
+
+        </a>
+      </div>
+      <a id="btnSave" @click="handleSettingsSave">Save</a>
     </div>
+  </div>
 </template>
 
 <style scoped>
 /* sidenav */
 
 .sidenav {
-  height: 100vh; /* 100% Full-height */
+  height: 100vh;
+  /* 100% Full-height */
   width: 0;
   max-width: 0;
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Stay on top */
-  top: 0; /* Stay at the top */
+  position: fixed;
+  /* Stay in place */
+  z-index: 1;
+  /* Stay on top */
+  top: 0;
+  /* Stay at the top */
   left: 0;
-  overflow: hidden; /* Disable horizontal scroll */
-  transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+  overflow: hidden;
+  /* Disable horizontal scroll */
+  transition: 0.5s;
+  /* 0.5 second transition effect to slide in the sidenav */
 }
+
 .sidenav-open {
   box-sizing: border-box;
   width: 100%;
   max-width: 430px;
 }
+
 .sidenav-content {
   padding: 10px 10px 10px 30px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: black; /* Black*/
+  background-color: black;
+  /* Black*/
   color: #818181;
 }
 
@@ -111,6 +149,17 @@
   text-decoration: none;
   color: #818181;
   cursor: pointer;
+}
+
+.show-mode_button {
+  cursor: pointer;
+  color: #818181;
+  background-color: inherit;
+  font-size: 0.75em;
+}
+
+.button_a {
+  border: 2px solid red;
 }
 
 .sidenav-content a:hover {
@@ -123,6 +172,7 @@
   font-size: 25px;
   padding-bottom: 10px;
 }
+
 .sidenav-title h2 {
   margin: 0;
   font-size: 25px;
@@ -140,18 +190,21 @@
   max-height: calc(100vh - 120px);
   /*overflow-y: auto; */
 }
+
 /* The navigation menu links */
 .galleries-container a {
   padding: 8px 0px 8px 8px;
   font-size: 25px;
   display: block;
   transition: 0.3s;
-
+  display: flex;
+  justify-content: space-between;
 }
 
 .simplebar-scrollbar::before {
   background-color: #818181;
 }
+
 .show-mode {
   display: flex;
   padding: 0 0px 8px 0px;
@@ -161,11 +214,13 @@
 .galleries-container a.selected {
   border: 1px solid #f1f1f1;
 }
+
 /* When you mouse over the navigation links, change their color */
 
 #btnSave {
   font-size: 30px;
 }
+
 .show-mode select {
   flex-grow: 1;
   margin-left: 5px;

@@ -72,7 +72,7 @@ async function handleSettingsSave() {
 <template>
   <main>
     <div class="container">
-      <Sidenav :is-open="sidenavOpen" @on-settings-save="handleSettingsSave" @on-close="(sidenavOpen = false)" />
+      <Sidenav v-model="sidenavOpen" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="images.length" :image-index="currentImageIndex" :images-count="images.length"
         :image-info="images[currentImageIndex]" />
