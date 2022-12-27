@@ -1,5 +1,14 @@
 <script setup lang="ts">
-  defineEmits(["sidenavOpen", "randomImage", "prevImage", "nextImage", "deleteImage", "markImage"])
+  import { useImagesStore } from '@/stores/images';
+  defineEmits(["sidenavOpen"]);
+
+  const {randomImage, prevImage, nextImage, deleteCurrentImage, markCurrentImage} = useImagesStore()
+  
+  function handleDeleteImage() {
+    if(confirm("Are you sure for delete this image?")) {
+      deleteCurrentImage()
+    }
+  }
 </script>
 
 <template>
@@ -8,11 +17,11 @@
           <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->
           &#9881;
         </a>
-        <a href="#" class="btn-panel" @click="$emit('randomImage')">random</a>
-        <a href="javascript:void(0)" class="btn-panel" @click="$emit('prevImage')">&lt;</a>
-        <a href="javascript:void(0)" class="btn-panel" @click="$emit('nextImage')">&gt;</a>
-        <a href="javascript:void(0)" class="btn-panel" @click="$emit('deleteImage')">&#10006;</a>
-        <a href="javascript:void(0)" class="btn-panel" @click="$emit('markImage')">&#10004;</a>
+        <a href="#" class="btn-panel" @click="randomImage">random</a>
+        <a href="javascript:void(0)" class="btn-panel" @click="prevImage">&lt;</a>
+        <a href="javascript:void(0)" class="btn-panel" @click="nextImage">&gt;</a>
+        <a href="javascript:void(0)" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
+        <a href="javascript:void(0)" class="btn-panel" @click="markCurrentImage">&#10004;</a>
       </div>
 </template>
 

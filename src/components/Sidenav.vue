@@ -3,16 +3,17 @@
         Функциональность
         1) открытие/закрытие по пропсу
         2) уведомление о закрытии по кнопке
-        3) при открытии загрузка настоек и списка галерей
+        3) при открытии загрузка настроек и списка галерей
         4) при сохранении проверка валидности настроек
         5) запись галереи и show_mode в настройки
         6) в вотче очиста списка галерей, при закрытии
     */
 
     import api from '@/api';
-    import { GalleryShowMode, PickerSettings, type Gallery } from '@/models';
+    import { GalleryShowMode, type PickerSettings, type Gallery } from '@/models';
     import { ref, watch } from 'vue';
-    
+    import { useSettingsStore } from '@/stores/settings';
+
     // props
     const props = defineProps<{
         isOpen: boolean
@@ -22,7 +23,7 @@
     const emit = defineEmits(["onSettingsSave", "onClose"]);
 
     // data
-    const settings = ref<PickerSettings>(new PickerSettings("", GalleryShowMode.All))
+    const settings = ref<PickerSettings>({selectedGallery:"", showMode:GalleryShowMode.All})
     const galleries = ref<Gallery[]>([])
     
     // watch
@@ -45,7 +46,8 @@
     }
 
     async function handleSettingsSave() {
-        await api.saveSettings(settings.value);
+        const settingsStore = useSettingsStore()
+        await settingsStore.saveSettings(settings.value);
         
         emit("onSettingsSave");
     }

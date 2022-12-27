@@ -18,16 +18,15 @@ export interface ImageInfo {
     mod_date: number
 }
 
-export class PickerSettings {
+export interface PickerSettings {
     showMode:GalleryShowMode
     selectedGallery:string
+}
 
-    constructor(selected_gallery:string, show_mode:GalleryShowMode) {
-        this.selectedGallery = selected_gallery;
-        this.showMode = show_mode;
+export function isPickerSettingsEqual(s1:PickerSettings, s2?:PickerSettings):boolean {
+    if (!s2) {
+        return false
     }
-    isEqual(settings:PickerSettings):boolean {
-        return this.selectedGallery == settings.selectedGallery &&
-            this.showMode == settings.showMode
-    }
+    return s1.selectedGallery == s2.selectedGallery &&
+        s1.showMode == s2.showMode
 }

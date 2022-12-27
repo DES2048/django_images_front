@@ -1,4 +1,4 @@
-import {GalleryShowMode, type ImageInfo, PickerSettings, type Gallery} from '../models'
+import type {GalleryShowMode, ImageInfo, PickerSettings, Gallery} from '../models'
 import Cookie from 'js-cookie'
 
 const CSRF_COOKIE_NAME = 'csrftoken'
@@ -6,6 +6,7 @@ const CSRF_HEADER_NAME = 'X-CSRFToken'
 const API_BASE_URL = new URL(import.meta.env.API_BASE_URL ? 
   import.meta.env.API_BASE_URL: document.location.origin)
 
+// TODO helper from SettingsResponse to PickerSettings
 export interface ImageInfoResponse {
   name:string, 
   url:string, 
@@ -52,7 +53,7 @@ class API {
   async getSettings () {
     const resp = await fetch(this.endpoints.settings);
     const data = await resp.json() as SettingsResponse;
-    return new PickerSettings(data.selected_gallery, data.show_mode);
+    return {selectedGallery:data.selected_gallery, showMode:data.show_mode} as PickerSettings;
   }
   
   async saveSettings (settings:PickerSettings) {
@@ -69,7 +70,7 @@ class API {
     });
 
     const data = await resp.json() as SettingsResponse;
-    return new PickerSettings(data.selected_gallery, data.show_mode);
+    return {selectedGallery:data.selected_gallery, showMode:data.show_mode} as PickerSettings;;
   }
   /**
    * fetch images, filtered by show_mode
