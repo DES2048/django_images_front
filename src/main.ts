@@ -6,6 +6,7 @@ import App from './App.vue'
 import router from './router'
 
 import './assets/main.css'
+import 'simplebar/dist/simplebar.min.css';
 
 const app = createApp(App)
 

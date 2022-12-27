@@ -1,15 +1,16 @@
 <script setup lang="ts">
 /* TODO
     Функциональность
+    1) альтернатива simplebar c меньшим размером
     2) если не выбрана галерея или show mode не сохранять настройки, в идеале показывать tooltip
     3) рефактор кнопок для showMode
 */
 
 import api from '@/api';
 import { GalleryShowMode, type PickerSettings, type Gallery } from '@/models';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import { useSettingsStore } from '@/stores/settings';
-
+import { SimpleBar } from 'simplebar-vue3';
 // props
 const props = defineProps<{
   modelValue: boolean
@@ -29,18 +30,18 @@ const galleries = ref<GalleryEx[]>([])
 // refs
 const sidenavRef = ref<HTMLElement | null>(null)
 
-function clickOutsideEventListener(e:MouseEvent) {
+function clickOutsideEventListener(e: MouseEvent) {
   if (!sidenavRef.value) {
     return
   }
   if (!sidenavRef.value.contains(e.target as HTMLElement)) {
-        emit('update:modelValue', false)
-      }
+    emit('update:modelValue', false)
+  }
 }
 
 // watch
 watch(() => props.modelValue, async (openValue) => {
-  
+
   if (openValue) {
     const [galls, settingsData] = await Promise.all([
       api.getGalleries(), api.getSettings()
@@ -87,21 +88,22 @@ async function handleSettingsSave() {
         <h2>Settings</h2>
         <a href="#" class="closebtn" id="sidenavClose" @click="$emit('update:modelValue', false)">&times;</a>
       </div>
-      <div class="galleries-container">
-        <a v-for="gallery in galleries" :key="gallery.slug"
-          :class="{ selected: gallery.slug === settings.selectedGallery }">
-          <span @click="handleGalleryClick(gallery.slug)">{{ gallery.title }}</span>
-          <span>
-            <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Marked }"
-              @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Marked)">M</button>
-            <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Unmarked }"
-              @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Unmarked)"><s>M</s></button>
-            <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.All }"
-              @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.All)">*.*</button>
-          </span>
-
-        </a>
-      </div>
+      <SimpleBar class="galleries-container">
+        <div>
+          <a v-for="gallery in galleries" :key="gallery.slug"
+            :class="{ selected: gallery.slug === settings.selectedGallery }">
+            <span @click="handleGalleryClick(gallery.slug)">{{ gallery.title }}</span>
+            <span>
+              <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Marked }"
+                @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Marked)">M</button>
+              <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Unmarked }"
+                @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Unmarked)"><s>M</s></button>
+              <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.All }"
+                @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.All)">*.*</button>
+            </span>
+          </a>
+        </div>
+      </SimpleBar>
       <a id="btnSave" @click="handleSettingsSave">Save</a>
     </div>
   </div>
@@ -156,6 +158,8 @@ async function handleSettingsSave() {
   color: #818181;
   background-color: inherit;
   font-size: 0.75em;
+  outline: none;
+  border: none;
 }
 
 .button_a {
@@ -187,7 +191,7 @@ async function handleSettingsSave() {
 
 .galleries-container {
   flex: 1 1 auto;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 100px);
   /*overflow-y: auto; */
 }
 
@@ -213,16 +217,5 @@ async function handleSettingsSave() {
 
 .galleries-container a.selected {
   border: 1px solid #f1f1f1;
-}
-
-/* When you mouse over the navigation links, change their color */
-
-#btnSave {
-  font-size: 30px;
-}
-
-.show-mode select {
-  flex-grow: 1;
-  margin-left: 5px;
 }
 </style>
