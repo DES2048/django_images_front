@@ -14,7 +14,7 @@ const { images, currentImageIndex} = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
 const {settings} = storeToRefs(settingsStore)
 // getters
-const {nextImage, prevImage, deleteCurrentImage} = imagesStore;
+const {nextImage, prevImage, randomImage, deleteCurrentImage} = imagesStore;
 
 // data
 const error = ref("")
@@ -62,6 +62,13 @@ function handleOpenSidenav() {
   console.log("open")
   sidenavOpen.value = true
 }
+
+function confirmDeleteImage() {
+  if(confirm("Are you sure for delete this image?")) {
+        deleteCurrentImage()
+      }
+}
+
 // FIXME swipes on whole screen not only in image area
 function onSwipe(dir:string) {
   console.log(dir)
@@ -73,18 +80,36 @@ function onSwipe(dir:string) {
       prevImage()
       break
     case 'top':
-      if(confirm("Are you sure for delete this image?")) {
-        deleteCurrentImage()
-      }
+      confirmDeleteImage()
       break
   }
-  
 }
+
+document.addEventListener("keydown", (e:KeyboardEvent)=>{
+  console.log("keydown")
+    switch (e.code) {
+        case "KeyR":
+          randomImage();
+          break;
+        case "ArrowLeft":
+          prevImage()
+          break;
+        case "ArrowRight":
+          nextImage()
+          break;
+        case "Delete":
+          confirmDeleteImage()
+          break
+        default:
+          break;
+      }
+})
+ 
 </script>
 
 <template>
   <main>
-    <div class="container">
+    <div class="container" >
       <Sidenav v-model="sidenavOpen" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="images.length" :image-index="currentImageIndex" :images-count="images.length"
