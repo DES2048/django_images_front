@@ -14,7 +14,7 @@ const { images, currentImageIndex} = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
 const {settings} = storeToRefs(settingsStore)
 // getters
-const {nextImage, prevImage, markCurrentImage, deleteCurrentImage, randomImage} = imagesStore;
+const {nextImage, prevImage, deleteCurrentImage} = imagesStore;
 
 // data
 const error = ref("")
@@ -62,11 +62,24 @@ function handleOpenSidenav() {
   console.log("open")
   sidenavOpen.value = true
 }
-
-async function handleSettingsSave() {
-  sidenavOpen.value = false;
+// FIXME swipes on whole screen not only in image area
+function onSwipe(dir:string) {
+  console.log(dir)
+  switch (dir) {
+    case 'left':
+      nextImage()
+      break
+    case 'right':
+      prevImage()
+      break
+    case 'top':
+      if(confirm("Are you sure for delete this image?")) {
+        deleteCurrentImage()
+      }
+      break
+  }
+  
 }
-
 </script>
 
 <template>
@@ -75,9 +88,8 @@ async function handleSettingsSave() {
       <Sidenav v-model="sidenavOpen" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="images.length" :image-index="currentImageIndex" :images-count="images.length"
-        :image-info="images[currentImageIndex]" />
-      <ButtonsPanel @sidenav-open="handleOpenSidenav" @next-image="nextImage" @prev-image="prevImage"
-        @random-image="randomImage" @mark-image="markCurrentImage" @delete-image="deleteCurrentImage" />
+        :image-info="images[currentImageIndex]"  v-touch:swipe="onSwipe"/>
+      <ButtonsPanel @sidenav-open="handleOpenSidenav" />
     </div>
   </main>
 </template>
