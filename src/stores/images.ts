@@ -26,6 +26,24 @@ function compareValues(a:number, b:number) {
   }
 }
 
+function shuffle(array:any[]) {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex != 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
 export const useImagesStore = defineStore("images", () => {
   // state
   const images = ref<ImageInfo[]>([])
@@ -57,6 +75,18 @@ export const useImagesStore = defineStore("images", () => {
     currentImageIndex.value = 0; // set to first 
   }
 
+  function firstImage() {
+    if (currentImageIndex.value >=0) {
+      currentImageIndex.value = 0;
+    }
+  }
+
+  function lastImage() {
+    if (currentImageIndex.value >=0) {
+      currentImageIndex.value = images.value.length-1;
+    }
+  }
+
   function nextImage() {
     if ((currentImageIndex.value + 1) == images.value.length) {
       return
@@ -77,6 +107,17 @@ export const useImagesStore = defineStore("images", () => {
     }
   }
   
+  function shuffleImages() {
+    if (images.value.length>0) {
+      // save current image name
+      const imageName = currentImage.value.name
+      // shuffling
+      images.value = shuffle(images.value.slice())
+      // restore right current image index
+      currentImageIndex.value = images.value.findIndex((img)=>img.name===imageName)
+    }
+  }
+
   async function markCurrentImage() {
       
       if (!settingsStore.settings) {
@@ -109,5 +150,7 @@ export const useImagesStore = defineStore("images", () => {
     }
   }
 
-  return {images, currentImageIndex, currentImage, resetImages, fetchImages, nextImage, prevImage, randomImage, markCurrentImage, deleteCurrentImage}
+  return {images, currentImageIndex, currentImage, 
+    resetImages, fetchImages, firstImage, lastImage, nextImage, prevImage, 
+    randomImage, shuffleImages, markCurrentImage, deleteCurrentImage}
 })

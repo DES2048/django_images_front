@@ -2,7 +2,7 @@
   import { useImagesStore } from '@/stores/images';
   defineEmits(["sidenavOpen"]);
 
-  const {randomImage, shuffleImages, prevImage, nextImage, deleteCurrentImage, markCurrentImage} = useImagesStore()
+  const {randomImage, shuffleImages, firstImage, lastImage, prevImage, nextImage, deleteCurrentImage, markCurrentImage} = useImagesStore()
   
   const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
@@ -21,10 +21,12 @@
         </a>
         <a href="#" class="btn-panel" @click="randomImage">random</a>
         <a href="#" class="btn-panel" @click="shuffleImages"><img class="shuffle-icon" :src="shuffleIcon" /></a>
-        <a href="javascript:void(0)" class="btn-panel" @click="prevImage">&lt;</a>
-        <a href="javascript:void(0)" class="btn-panel" @click="nextImage">&gt;</a>
-        <a href="javascript:void(0)" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
-        <a href="javascript:void(0)" class="btn-panel" @click="markCurrentImage">&#10004;</a>
+        <a href="#" class="btn-panel" @click="firstImage">&lt;&lt;</a>
+        <a href="#" class="btn-panel" @click="prevImage">&lt;</a>
+        <a href="#" class="btn-panel" @click="nextImage">&gt;</a>
+        <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
+        <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
+        <a href="#" class="btn-panel" @click="markCurrentImage">&#10004;</a>
       </div>
 </template>
 
