@@ -1,16 +1,15 @@
 <script setup lang="ts">
 /* TODO
     Функциональность
-    1) альтернатива simplebar c меньшим размером
-    2) если не выбрана галерея или show mode не сохранять настройки, в идеале показывать tooltip
-    3) рефактор кнопок для showMode
+    1) если не выбрана галерея или show mode не сохранять настройки, в идеале показывать tooltip
+    2) рефактор кнопок для showMode
 */
 
 import api from '@/api';
 import { GalleryShowMode, type PickerSettings, type Gallery } from '@/models';
 import { nextTick, ref, watch } from 'vue';
 import { useSettingsStore } from '@/stores/settings';
-import { SimpleBar } from 'simplebar-vue3';
+
 // props
 const props = defineProps<{
   modelValue: boolean
@@ -38,6 +37,7 @@ function clickOutsideEventListener(e: MouseEvent) {
     emit('update:modelValue', false)
   }
 }
+const saveIcon = new URL("../assets/icons8-save-30.png",import.meta.url).href
 
 // watch
 watch(() => props.modelValue, async (openValue) => {
@@ -86,13 +86,13 @@ async function handleSettingsSave() {
     <div class="sidenav-content">
       <div class="sidenav-title">
         <h2>Settings</h2>
+        <img :src="saveIcon" class="save-button" @click="handleSettingsSave"/>
         <a href="#" class="closebtn" id="sidenavClose" @click="$emit('update:modelValue', false)">&times;</a>
       </div>
-      <SimpleBar class="galleries-container">
-        <div>
+        <div class="galleries-container">
           <a v-for="gallery in galleries" :key="gallery.slug"
             :class="{ selected: gallery.slug === settings.selectedGallery }">
-            <span @click="handleGalleryClick(gallery.slug)">{{ gallery.title }}</span>
+            <span @click="handleGalleryClick(gallery.slug)" class="gallery-title">{{ gallery.title }}</span>
             <span>
               <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Marked }"
                 @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Marked)">M</button>
@@ -103,8 +103,6 @@ async function handleSettingsSave() {
             </span>
           </a>
         </div>
-      </SimpleBar>
-      <a id="btnSave" @click="handleSettingsSave">Save</a>
     </div>
   </div>
 </template>
@@ -135,7 +133,10 @@ async function handleSettingsSave() {
   width: 100%;
   max-width: 430px;
 }
-
+.save-button {
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
 .sidenav-content {
   padding: 10px 10px 10px 30px;
   box-sizing: border-box;
@@ -174,7 +175,6 @@ async function handleSettingsSave() {
   display: flex;
   align-items: center;
   font-size: 25px;
-  padding-bottom: 10px;
 }
 
 .sidenav-title h2 {
@@ -188,13 +188,21 @@ async function handleSettingsSave() {
   margin-left: auto;
   font-weight: 600;
 }
-
+/* galleries */
 .galleries-container {
   flex: 1 1 auto;
-  max-height: calc(100vh - 100px);
-  /*overflow-y: auto; */
+  max-height: 100vh;
+  overflow-y: auto;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
-
+/* Hide scrollbar for Chrome, Safari and Opera */
+.galleries-container::-webkit-scrollbar {
+    display: none;
+}
+.gallery-title {
+  flex-grow: 1;
+}
 /* The navigation menu links */
 .galleries-container a {
   padding: 8px 0px 8px 8px;
@@ -204,17 +212,6 @@ async function handleSettingsSave() {
   display: flex;
   justify-content: space-between;
 }
-
-.simplebar-scrollbar::before {
-  background-color: #818181;
-}
-
-.show-mode {
-  display: flex;
-  padding: 0 0px 8px 0px;
-  align-items: center;
-}
-
 .galleries-container a.selected {
   border: 1px solid #f1f1f1;
 }
