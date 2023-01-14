@@ -11,7 +11,7 @@ import { ref, watch } from 'vue';
 
     const imageLoading = ref(true);
     
-    watch(()=>props.imageIndex, ()=>{
+    watch(()=>props.imageInfo.name, ()=>{
 
       imageLoading.value = true
     })

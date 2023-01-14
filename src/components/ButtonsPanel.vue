@@ -2,8 +2,10 @@
   import { useImagesStore } from '@/stores/images';
   defineEmits(["sidenavOpen"]);
 
-  const {randomImage, prevImage, nextImage, deleteCurrentImage, markCurrentImage} = useImagesStore()
+  const {randomImage, shuffleImages, prevImage, nextImage, deleteCurrentImage, markCurrentImage} = useImagesStore()
   
+  const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
+
   function handleDeleteImage() {
     if(confirm("Are you sure for delete this image?")) {
       deleteCurrentImage()
@@ -18,6 +20,7 @@
           &#9881;
         </a>
         <a href="#" class="btn-panel" @click="randomImage">random</a>
+        <a href="#" class="btn-panel" @click="shuffleImages"><img class="shuffle-icon" :src="shuffleIcon" /></a>
         <a href="javascript:void(0)" class="btn-panel" @click="prevImage">&lt;</a>
         <a href="javascript:void(0)" class="btn-panel" @click="nextImage">&gt;</a>
         <a href="javascript:void(0)" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
@@ -49,5 +52,9 @@
 .btn-panel:active {
   outline: none !important ;
   box-shadow: none !important ;
+}
+.shuffle-icon {
+  width: 1rem;
+  height: 1rem;
 }
 </style>
