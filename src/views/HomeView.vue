@@ -10,11 +10,11 @@ import { isPickerSettingsEqual } from "@/models";
 
 // stores
 const imagesStore = useImagesStore()
-const { images, currentImageIndex} = storeToRefs(imagesStore);
+const { images, currentImageIndex, randomMode} = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
 const {settings} = storeToRefs(settingsStore)
 // getters
-const {nextImage, prevImage, randomImage, deleteCurrentImage} = imagesStore;
+const {nextImage, prevImage, deleteCurrentImage} = imagesStore;
 
 // data
 const error = ref("")
@@ -89,7 +89,7 @@ document.addEventListener("keydown", (e:KeyboardEvent)=>{
   console.log("keydown")
     switch (e.code) {
         case "KeyR":
-          randomImage();
+          randomMode.value = !randomMode.value;
           break;
         case "ArrowLeft":
           prevImage()

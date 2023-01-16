@@ -48,6 +48,8 @@ export const useImagesStore = defineStore("images", () => {
   // state
   const images = ref<ImageInfo[]>([])
   const currentImageIndex = ref(-1);
+  const randomMode = ref(false)
+
   // imported stores
   const settingsStore = useSettingsStore()
 
@@ -60,6 +62,7 @@ export const useImagesStore = defineStore("images", () => {
   function resetImages() {
     images.value = []
     currentImageIndex.value = -1;
+    randomMode.value = false
   }
 
   async function fetchImages(gallery:string, showMode:GalleryShowMode) {
@@ -72,7 +75,12 @@ export const useImagesStore = defineStore("images", () => {
     imagesData.sort((a, b) => invertComparsion(compareValues(a.mod_date, b.mod_date)));
     
     images.value = imagesData;
-    currentImageIndex.value = 0; // set to first 
+    if (randomMode.value) {
+      randomImage();
+    } else {
+      currentImageIndex.value = 0; // set to first 
+    }
+    
   }
 
   function firstImage() {
@@ -88,6 +96,10 @@ export const useImagesStore = defineStore("images", () => {
   }
 
   function nextImage() {
+    if (randomMode.value) {
+      randomImage()
+      return
+    }
     if ((currentImageIndex.value + 1) == images.value.length) {
       return
     }
@@ -95,6 +107,10 @@ export const useImagesStore = defineStore("images", () => {
   }
   
   function prevImage() {
+    if (randomMode.value) {
+      randomImage()
+      return
+    }
     if (currentImageIndex.value == 0) {
       return
     }
@@ -130,7 +146,15 @@ export const useImagesStore = defineStore("images", () => {
   
       if (settingsStore.settings.showMode == GalleryShowMode.Unmarked) {
         images.value.splice(currentImageIndex.value, 1);
-        randomImage();
+        if (randomMode.value) {
+          randomImage();
+        } else {
+          // move to next if possible
+          if (currentImageIndex.value === images.value.length) {
+            prevImage()
+          }
+        }
+        
       } else {
         images.value[currentImageIndex.value] = img_info;
       }
@@ -146,11 +170,19 @@ export const useImagesStore = defineStore("images", () => {
   
     if (response.ok) {
       images.value.splice(currentImageIndex.value, 1)
-      randomImage();
+      
+      if (randomMode.value) {
+        randomImage();
+      } else {
+        // move to next if possible
+        if (currentImageIndex.value === images.value.length) {
+          prevImage()
+        }
+      }
     }
   }
 
-  return {images, currentImageIndex, currentImage, 
+  return {images, currentImageIndex, currentImage, randomMode,
     resetImages, fetchImages, firstImage, lastImage, nextImage, prevImage, 
     randomImage, shuffleImages, markCurrentImage, deleteCurrentImage}
 })

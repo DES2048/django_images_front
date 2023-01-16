@@ -1,37 +1,46 @@
 <script setup lang="ts">
-  import { useImagesStore } from '@/stores/images';
-  defineEmits(["sidenavOpen"]);
+import { useImagesStore } from '@/stores/images';
+import { storeToRefs } from 'pinia';
+defineEmits(["sidenavOpen"]);
 
-  const {randomImage, shuffleImages, firstImage, lastImage, prevImage, nextImage, deleteCurrentImage, markCurrentImage} = useImagesStore()
-  
-  const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
+const imagesStore = useImagesStore()
+const { randomImage, shuffleImages, firstImage, lastImage, prevImage, nextImage,
+  deleteCurrentImage, markCurrentImage } = imagesStore
 
-  function handleDeleteImage() {
-    if(confirm("Are you sure for delete this image?")) {
-      deleteCurrentImage()
-    }
+const { randomMode } = storeToRefs(imagesStore);
+
+const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
+
+function handleRandomImage() {
+  randomMode.value = !randomMode.value
+}
+
+function handleDeleteImage() {
+  if (confirm("Are you sure for delete this image?")) {
+    deleteCurrentImage()
   }
+}
 </script>
 
 <template>
-    <div class="buttons-panel">
-        <a href="#" class="btn-panel" @click="$emit('sidenavOpen')">
-          <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->
-          &#9881;
-        </a>
-        <a href="#" class="btn-panel" @click="randomImage">random</a>
-        <a href="#" class="btn-panel" @click="shuffleImages"><img class="shuffle-icon" :src="shuffleIcon" /></a>
-        <a href="#" class="btn-panel" @click="firstImage">&lt;&lt;</a>
-        <a href="#" class="btn-panel" @click="prevImage">&lt;</a>
-        <a href="#" class="btn-panel" @click="nextImage">&gt;</a>
-        <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
-        <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
-        <a href="#" class="btn-panel" @click="markCurrentImage">&#10004;</a>
-      </div>
+  <div class="buttons-panel">
+    <a href="#" class="btn-panel" @click="$emit('sidenavOpen')">
+      <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->
+      &#9881;
+    </a>
+    <a href="#" class="btn-panel" :class="{ 'toggle-btn': randomMode }" @click="handleRandomImage">random</a>
+    <a href="#" class="btn-panel" @click="shuffleImages"><img class="shuffle-icon" :src="shuffleIcon" /></a>
+    <a href="#" class="btn-panel" @click="firstImage">&lt;&lt;</a>
+    <a href="#" class="btn-panel" @click="prevImage">&lt;</a>
+    <a href="#" class="btn-panel" @click="nextImage">&gt;</a>
+    <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
+    <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
+    <a href="#" class="btn-panel" @click="markCurrentImage">&#10004;</a>
+  </div>
 </template>
 
 <style scoped>
-    /* buttons panel */
+/* buttons panel */
 .buttons-panel {
   display: flex;
   justify-content: space-around;
@@ -50,11 +59,18 @@
   text-decoration: none !important;
 }
 
+.toggle-btn {
+  border: 1px solid red;
+  border-radius: 0.25rem;
+  padding: 0 0.5rem;
+}
+
 .btn-panel:focus,
 .btn-panel:active {
-  outline: none !important ;
-  box-shadow: none !important ;
+  outline: none !important;
+  box-shadow: none !important;
 }
+
 .shuffle-icon {
   width: 1rem;
   height: 1rem;
