@@ -79,9 +79,6 @@ function onSwipe(dir:string) {
     case 'right':
       prevImage()
       break
-    case 'top':
-      confirmDeleteImage()
-      break
   }
 }
 
