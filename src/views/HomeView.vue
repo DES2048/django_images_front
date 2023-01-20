@@ -6,6 +6,7 @@ import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/stores/settings";
+import {useSidenavStore} from '@/stores/sidenav'
 import { isPickerSettingsEqual } from "@/models";
 
 // stores
@@ -13,6 +14,8 @@ const imagesStore = useImagesStore()
 const { images, currentImageIndex, randomMode} = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
 const {settings} = storeToRefs(settingsStore)
+const sidenavStore = useSidenavStore()
+
 // getters
 const {nextImage, prevImage, deleteCurrentImage} = imagesStore;
 
@@ -54,14 +57,6 @@ async function reload() {
 
 // hooks
 onMounted(reload);
-
-// sidenav
-const sidenavOpen = ref(false);
-
-function handleOpenSidenav() {
-  console.log("open")
-  sidenavOpen.value = true
-}
 
 function confirmDeleteImage() {
   if(confirm("Are you sure for delete this image?")) {
@@ -107,11 +102,11 @@ document.addEventListener("keydown", (e:KeyboardEvent)=>{
 <template>
   <main>
     <div class="container" >
-      <Sidenav v-model="sidenavOpen" />
+      <Sidenav v-model="sidenavStore.open" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="images.length" :image-index="currentImageIndex" :images-count="images.length"
         :image-info="images[currentImageIndex]"  v-touch:swipe="onSwipe"/>
-      <ButtonsPanel @sidenav-open="handleOpenSidenav" />
+      <ButtonsPanel />
     </div>
   </main>
 </template>

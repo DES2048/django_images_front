@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useImagesStore } from '@/stores/images';
+import { useSidenavStore } from '@/stores/sidenav';
 import { storeToRefs } from 'pinia';
-defineEmits(["sidenavOpen"]);
 
 const imagesStore = useImagesStore()
-const { randomImage, shuffleImages, firstImage, lastImage, prevImage, nextImage,
+const sidenavStore = useSidenavStore()
+const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
   deleteCurrentImage, markCurrentImage } = imagesStore
 
 const { randomMode } = storeToRefs(imagesStore);
@@ -24,7 +25,7 @@ function handleDeleteImage() {
 
 <template>
   <div class="buttons-panel">
-    <a href="#" class="btn-panel" @click="$emit('sidenavOpen')">
+    <a href="#" class="btn-panel" @click="sidenavStore.open=true">
       <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->
       &#9881;
     </a>
