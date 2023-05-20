@@ -1,4 +1,3 @@
-import type { ImageInfoResponse, SettingsResponse } from "@/api";
 
 export enum GalleryShowMode {
     All = "all",
