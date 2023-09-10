@@ -49,6 +49,7 @@ export const useImagesStore = defineStore("images", () => {
   const images = ref<ImageInfo[]>([])
   const currentImageIndex = ref(-1);
   const randomMode = ref(false)
+  const imagesLoaded = ref(false)
 
   // imported stores
   const settingsStore = useSettingsStore()
@@ -80,7 +81,7 @@ export const useImagesStore = defineStore("images", () => {
     } else {
       currentImageIndex.value = 0; // set to first 
     }
-    
+    imagesLoaded.value = true;
   }
 
   function firstImage() {
@@ -139,6 +140,9 @@ export const useImagesStore = defineStore("images", () => {
       if (!settingsStore.settings) {
         return
       }
+      if (!currentImage.value)
+        return
+
       const img_info = await api.markImage(
         settingsStore.settings.selectedGallery,
         currentImage.value.name
@@ -164,6 +168,9 @@ export const useImagesStore = defineStore("images", () => {
     if (!settingsStore.settings) {
       return
     }
+    if (!currentImage.value)
+        return
+    
     const img_info = await api.unmarkImage(
       settingsStore.settings.selectedGallery,
       currentImage.value.name
@@ -207,7 +214,7 @@ export const useImagesStore = defineStore("images", () => {
     }
   }
 
-  return {images, currentImageIndex, currentImage, randomMode,
+  return {images, currentImageIndex, imagesLoaded, currentImage, randomMode,
     resetImages, fetchImages, firstImage, lastImage, nextImage, prevImage, 
     randomImage, shuffleImages, markCurrentImage, unmarkCurrentImage, deleteCurrentImage}
 })

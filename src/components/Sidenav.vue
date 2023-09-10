@@ -205,7 +205,7 @@ async function handleSettingsSave() {
 }
 /* The navigation menu links */
 .galleries-container a {
-  padding: 8px 0px 8px 8px;
+  padding: 8px 0px 8px 0px;
   font-size: 25px;
   display: block;
   transition: 0.3s;

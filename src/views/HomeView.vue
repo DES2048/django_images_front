@@ -22,7 +22,7 @@ const {nextImage, prevImage, deleteCurrentImage} = imagesStore;
 // data
 const error = ref("")
 
-// watchers
+// watch settings changed
 watch(settings, async (newSettings, oldSettings)=> {
   if (isPickerSettingsEqual(newSettings, oldSettings)) {
     return 
@@ -104,7 +104,7 @@ document.addEventListener("keydown", (e:KeyboardEvent)=>{
     <div class="container" >
       <Sidenav v-model="sidenavStore.open" />
       <div class="error-message" v-if="error">{{ error }}</div>
-      <ImageDrawer v-if="images.length" :image-index="currentImageIndex" :images-count="images.length"
+      <ImageDrawer v-if="!error && images.length" :image-index="currentImageIndex" :images-count="images.length"
         :image-info="images[currentImageIndex]"  v-touch:swipe="onSwipe"/>
       <ButtonsPanel />
     </div>

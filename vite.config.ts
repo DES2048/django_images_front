@@ -1,26 +1,33 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  },
-  server: {
-    port: 3000,
-  },
-  build: {
-    manifest: true,
-    rollupOptions: {
-      input: "src/main.ts"
+export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, process.cwd())
+  
+  return {
+    plugins: [vue()],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
     },
-    outDir: "D:/projects/django_images/dist",
-    assetsDir: "",
-    emptyOutDir: true,
+    server: {
+      port: +env.VITE_SERVER_PORT,
+      host: env.VITE_SERVER_HOST,
+      hmr: {host:env.VITE_HMR_HOST}
+    },
+    build: {
+      manifest: true,
+      rollupOptions: {
+        input: "src/main.ts"
+      },
+      outDir: "D:/projects/django_images/frontend_dist",
+      assetsDir: "",
+      emptyOutDir: true,
+      sourcemap:true
+    }
   }
 })
