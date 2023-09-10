@@ -6,9 +6,9 @@ import { storeToRefs } from 'pinia';
 const imagesStore = useImagesStore()
 const sidenavStore = useSidenavStore()
 const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
-  deleteCurrentImage, markCurrentImage } = imagesStore
+  deleteCurrentImage, markCurrentImage, unmarkCurrentImage } = imagesStore
 
-const { randomMode } = storeToRefs(imagesStore);
+const { randomMode, currentImage } = storeToRefs(imagesStore);
 
 const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
@@ -16,10 +16,17 @@ function handleRandomImage() {
   randomMode.value = !randomMode.value
 }
 
-function handleDeleteImage() {
+async function handleDeleteImage() {
   if (confirm("Are you sure for delete this image?")) {
-    deleteCurrentImage()
+    await deleteCurrentImage()
   }
+}
+
+async function handleMarkUnmark() {
+  if (!currentImage.value.marked)
+    await markCurrentImage();
+  else
+    await unmarkCurrentImage();
 }
 </script>
 
@@ -36,7 +43,7 @@ function handleDeleteImage() {
     <a href="#" class="btn-panel" @click="nextImage">&gt;</a>
     <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
     <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
-    <a href="#" class="btn-panel" @click="markCurrentImage">&#10004;</a>
+    <a href="#" class="btn-panel" :class="{ 'toggle-btn': currentImage.marked }" @click="handleMarkUnmark">&#10004;</a>
   </div>
 </template>
 

@@ -32,7 +32,10 @@ class API {
     },
     markImage(gallery:string, imgName:string) {
       return new URL(`/galleries/${gallery}/images/${imgName}/mark`, API_BASE_URL);
-    }  
+    },
+    unmarkImage(gallery:string, imgName:string) {
+      return new URL(`/galleries/${gallery}/images/${imgName}/unmark`, API_BASE_URL);
+    }   
   }
 
   // TODO Pass endpoints to constuctor
@@ -83,6 +86,17 @@ class API {
   }
   async markImage(gallery:string, imgName:string): Promise<ImageInfo> {
     const resp = await fetch(this.endpoints.markImage(gallery, imgName), 
+      {
+        method: "POST",
+        headers: {
+          ...this.setCSRFToken()
+        }
+      }
+    );
+    return await resp.json() as ImageInfo;
+  }
+  async unmarkImage(gallery:string, imgName:string): Promise<ImageInfo> {
+    const resp = await fetch(this.endpoints.unmarkImage(gallery, imgName), 
       {
         method: "POST",
         headers: {

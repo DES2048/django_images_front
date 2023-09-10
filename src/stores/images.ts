@@ -159,6 +159,31 @@ export const useImagesStore = defineStore("images", () => {
         images.value[currentImageIndex.value] = img_info;
       }
   }
+  async function unmarkCurrentImage() {
+      
+    if (!settingsStore.settings) {
+      return
+    }
+    const img_info = await api.unmarkImage(
+      settingsStore.settings.selectedGallery,
+      currentImage.value.name
+    );
+
+    if (settingsStore.settings.showMode == GalleryShowMode.Marked) {
+      images.value.splice(currentImageIndex.value, 1);
+      if (randomMode.value) {
+        randomImage();
+      } else {
+        // move to next if possible
+        if (currentImageIndex.value === images.value.length) {
+          prevImage()
+        }
+      }
+      
+    } else {
+      images.value[currentImageIndex.value] = img_info;
+    }
+}
   
   // TODO throw an error
   async function deleteCurrentImage() {
@@ -184,5 +209,5 @@ export const useImagesStore = defineStore("images", () => {
 
   return {images, currentImageIndex, currentImage, randomMode,
     resetImages, fetchImages, firstImage, lastImage, nextImage, prevImage, 
-    randomImage, shuffleImages, markCurrentImage, deleteCurrentImage}
+    randomImage, shuffleImages, markCurrentImage, unmarkCurrentImage, deleteCurrentImage}
 })
