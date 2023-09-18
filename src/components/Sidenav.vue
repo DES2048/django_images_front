@@ -6,8 +6,9 @@
 */
 
 import api from '@/api';
-import { GalleryShowMode, type PickerSettings, type Gallery } from '@/models';
+import { GalleryShowMode, type Gallery, type PickerSettings } from '@/models';
 import { nextTick, ref, watch } from 'vue';
+//import { storeToRefs } from "pinia";
 import { useSettingsStore } from '@/stores/settings';
 
 // props
@@ -25,6 +26,10 @@ interface GalleryEx extends Gallery {
 // data
 const settings = ref<PickerSettings>({ selectedGallery: "", showMode: GalleryShowMode.All })
 const galleries = ref<GalleryEx[]>([])
+
+// store
+const settingsStore = useSettingsStore()
+//const {settings} = storeToRefs(settingsStore)
 
 // refs
 const sidenavRef = ref<HTMLElement | null>(null)
@@ -46,8 +51,17 @@ watch(() => props.modelValue, async (openValue) => {
     const [galls, settingsData] = await Promise.all([
       api.getGalleries(), api.getSettings()
     ]);
-
-    settings.value = settingsData;
+    settings.value = settingsData
+    // if selected gallery present move it on top of list
+    if (settings.value.selectedGallery !== "") {
+      const idx = galls.findIndex((g)=>g.slug===settings.value.selectedGallery)
+      if (idx>=0) {
+        const elem = galls[idx]
+        galls.splice(idx,1)
+        galls.unshift(elem)
+      }
+    }
+    // set show mode from settings
     galleries.value = galls.map(g => ({ ...g, showMode: settings.value.showMode }));
 
     await nextTick()
@@ -64,6 +78,7 @@ function handleGalleryClick(gallery_id: string) {
   settings.value.selectedGallery = gallery_id
   settings.value.showMode = galleries.value.find((g) => g.slug === gallery_id)!.showMode
 }
+
 function handleShowModeButtonClick(gallery_id: string, showMode: GalleryShowMode) {
   galleries.value.find((g) => g.slug === gallery_id)!.showMode = showMode;
 
@@ -75,7 +90,7 @@ async function handleSettingsSave() {
   if (!settings.value.selectedGallery) {
     return
   }
-  const settingsStore = useSettingsStore()
+  
   await settingsStore.saveSettings(settings.value);
   emit('update:modelValue', false)
 }

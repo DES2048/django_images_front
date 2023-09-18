@@ -6,34 +6,34 @@ import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/stores/settings";
-import {useSidenavStore} from '@/stores/sidenav'
+import { useSidenavStore } from '@/stores/sidenav'
 import { isPickerSettingsEqual } from "@/models";
 
 // stores
 const imagesStore = useImagesStore()
-const { images, currentImageIndex, randomMode} = storeToRefs(imagesStore);
+const { images, currentImageIndex, randomMode } = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
-const {settings} = storeToRefs(settingsStore)
+const { settings } = storeToRefs(settingsStore)
 const sidenavStore = useSidenavStore()
 
 // getters
-const {nextImage, prevImage, deleteCurrentImage} = imagesStore;
+const { nextImage, prevImage, deleteCurrentImage } = imagesStore;
 
 // data
 const error = ref("")
 
 // watch settings changed
-watch(settings, async (newSettings, oldSettings)=> {
+watch(settings, async (newSettings, oldSettings) => {
   if (isPickerSettingsEqual(newSettings, oldSettings)) {
-    return 
+    return
   }
 
   error.value = "";
 
-  try { 
-  // loading images
-  await imagesStore.fetchImages(settings.value!.selectedGallery,settings.value!.showMode);
-  } catch(err) {
+  try {
+    // loading images
+    await imagesStore.fetchImages(settings.value!.selectedGallery, settings.value!.showMode);
+  } catch (err) {
     error.value = (err as Error).message
   }
 
@@ -48,9 +48,9 @@ async function reload() {
     // fetching settings
     await settingsStore.fetchSettings();
 
-  // loading images
-  await imagesStore.fetchImages(settings.value!.selectedGallery,settings.value!.showMode);
-  } catch(err) {
+    // loading images
+    await imagesStore.fetchImages(settings.value!.selectedGallery, settings.value!.showMode);
+  } catch (err) {
     error.value = (err as Error).message
   }
 }
@@ -59,13 +59,13 @@ async function reload() {
 onMounted(reload);
 
 function confirmDeleteImage() {
-  if(confirm("Are you sure for delete this image?")) {
-        deleteCurrentImage()
-      }
+  if (confirm("Are you sure for delete this image?")) {
+    deleteCurrentImage()
+  }
 }
 
 // FIXME swipes on whole screen not only in image area
-function onSwipe(dir:string) {
+function onSwipe(dir: string) {
   console.log(dir)
   switch (dir) {
     case 'left':
@@ -77,35 +77,35 @@ function onSwipe(dir:string) {
   }
 }
 
-document.addEventListener("keydown", (e:KeyboardEvent)=>{
+document.addEventListener("keydown", (e: KeyboardEvent) => {
   console.log("keydown")
-    switch (e.code) {
-        case "KeyR":
-          randomMode.value = !randomMode.value;
-          break;
-        case "ArrowLeft":
-          prevImage()
-          break;
-        case "ArrowRight":
-          nextImage()
-          break;
-        case "Delete":
-          confirmDeleteImage()
-          break
-        default:
-          break;
-      }
+  switch (e.code) {
+    case "KeyR":
+      randomMode.value = !randomMode.value;
+      break;
+    case "ArrowLeft":
+      prevImage()
+      break;
+    case "ArrowRight":
+      nextImage()
+      break;
+    case "Delete":
+      confirmDeleteImage()
+      break
+    default:
+      break;
+  }
 })
- 
+
 </script>
 
 <template>
   <main>
-    <div class="container" >
+    <div class="container">
       <Sidenav v-model="sidenavStore.open" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="!error && images.length" :image-index="currentImageIndex" :images-count="images.length"
-        :image-info="images[currentImageIndex]"  v-touch:swipe="onSwipe"/>
+        :image-info="images[currentImageIndex]" v-touch:swipe="onSwipe" />
       <ButtonsPanel />
     </div>
   </main>

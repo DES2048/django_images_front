@@ -1,13 +1,14 @@
+import { ref } from "vue";
 import { defineStore } from "pinia";
 import api from '@/api'
 import { GalleryShowMode, isPickerSettingsEqual, type PickerSettings } from "@/models";
-import { ref } from "vue";
+
 
 export const useSettingsStore = defineStore("settings", () => {
-    // state
-    let settings = ref<PickerSettings>({selectedGallery:'', showMode:GalleryShowMode.All});
+  // state
+  let settings = ref<PickerSettings>({ selectedGallery: '', showMode: GalleryShowMode.All });
 
-    // actions
+  // actions
   async function fetchSettings() {
     const data = await api.getSettings();
     if (!data.selectedGallery) {
@@ -16,7 +17,7 @@ export const useSettingsStore = defineStore("settings", () => {
     settings.value = data;
   }
 
-  async function saveSettings(newSettings:PickerSettings) {
+  async function saveSettings(newSettings: PickerSettings) {
     if (isPickerSettingsEqual(settings.value, newSettings)) {
       return;
     }
@@ -24,5 +25,5 @@ export const useSettingsStore = defineStore("settings", () => {
     settings.value = await api.saveSettings(newSettings);
 
   }
-  return {settings, fetchSettings, saveSettings}
+  return { settings, fetchSettings, saveSettings }
 }) 
