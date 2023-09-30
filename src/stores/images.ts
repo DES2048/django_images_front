@@ -198,9 +198,10 @@ export const useImagesStore = defineStore("images", () => {
       return
     }
 
-    const response = await api.deleteImage(settingsStore.settings!.selectedGallery, currentImage.value.name)
+    // FIXME check response
+    await api.deleteImage(settingsStore.settings!.selectedGallery, currentImage.value.name)
   
-    if (response.ok) {
+    if (true) {
       images.value.splice(currentImageIndex.value, 1)
       
       if (randomMode.value) {

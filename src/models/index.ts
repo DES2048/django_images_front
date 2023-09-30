@@ -8,6 +8,8 @@ export enum GalleryShowMode {
 export interface Gallery {
     slug: string
     title: string
+    pinned: boolean
+    pinned_date?: number
 }
 
 export interface ImageInfo {

@@ -24,6 +24,9 @@ class API {
   endpoints = {
     settings: new URL("/settings/", API_BASE_URL),
     galleries: new URL("/galleries/", API_BASE_URL),
+    pinUnpinGallery(gallery:string, pin:boolean) {
+      return new URL(`/galleries/${gallery}/${pin ? 'pin': 'unpin'}`, API_BASE_URL);
+    },
     images(gallery:string, show_mode:GalleryShowMode) {
       return new URL(`/galleries/${gallery}/images/?show_mode=${show_mode}`, API_BASE_URL);
     },
@@ -35,7 +38,7 @@ class API {
     },
     unmarkImage(gallery:string, imgName:string) {
       return new URL(`/galleries/${gallery}/images/${imgName}/unmark`, API_BASE_URL);
-    }   
+    },   
   }
 
   // TODO Pass endpoints to constuctor
@@ -49,9 +52,25 @@ class API {
       [CSRF_HEADER_NAME] : this.getCSRFfromCookie()
     }
   }
+  private async doPost<R>(url:URL, body?:any): Promise<R> {
+    const resp =  await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.setCSRFToken()
+      },
+      body: body ? JSON.stringify(body): undefined
+    });
+
+    return await resp.json() as R
+  }
   async getGalleries () {
     const resp = await fetch(this.endpoints.galleries);
     return await resp.json() as Gallery[];
+  }
+  async pinUnpinGallery(gallery: string, pin: boolean): Promise<Gallery> {
+    const url = this.endpoints.pinUnpinGallery(gallery, pin)
+    return await this.doPost<Gallery>(url)
   }
   async getSettings () {
     const resp = await fetch(this.endpoints.settings);
@@ -60,19 +79,11 @@ class API {
   }
   
   async saveSettings (settings:PickerSettings) {
-    const resp =  await fetch(this.endpoints.settings, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.setCSRFToken()
-      },
-      body: JSON.stringify({
+    const data =  await this.doPost<SettingsResponse>(this.endpoints.settings, {
         selected_gallery: settings.selectedGallery,
         show_mode: settings.showMode
-      })
-    });
-
-    const data = await resp.json() as SettingsResponse;
+    })
+  
     return {selectedGallery:data.selected_gallery, showMode:data.show_mode} as PickerSettings;;
   }
   /**
@@ -85,36 +96,17 @@ class API {
         
   }
   async markImage(gallery:string, imgName:string): Promise<ImageInfo> {
-    const resp = await fetch(this.endpoints.markImage(gallery, imgName), 
-      {
-        method: "POST",
-        headers: {
-          ...this.setCSRFToken()
-        }
-      }
-    );
-    return await resp.json() as ImageInfo;
+    const url = this.endpoints.markImage(gallery, imgName)
+    return await this.doPost<ImageInfo>(url) 
+  
   }
   async unmarkImage(gallery:string, imgName:string): Promise<ImageInfo> {
-    const resp = await fetch(this.endpoints.unmarkImage(gallery, imgName), 
-      {
-        method: "POST",
-        headers: {
-          ...this.setCSRFToken()
-        }
-      }
-    );
-    return await resp.json() as ImageInfo;
+    const url = this.endpoints.unmarkImage(gallery, imgName)
+    return await this.doPost<ImageInfo>(url) 
   }
 
   async deleteImage(gallery:string, url:string) {
-    return await fetch(this.endpoints.deleteImage(gallery, url),
-      {
-        method: "POST",
-        headers: {
-          ...this.setCSRFToken()
-        }
-      });
+    return await this.doPost<void>(this.endpoints.deleteImage(gallery, url))
   }
 }
 

@@ -10,6 +10,12 @@ import { GalleryShowMode, type Gallery, type PickerSettings } from '@/models';
 import { nextTick, ref, watch } from 'vue';
 //import { storeToRefs } from "pinia";
 import { useSettingsStore } from '@/stores/settings';
+import GalleryActions from './GalleryActions.vue';
+
+// types
+interface GalleryEx extends Gallery {
+  showMode: GalleryShowMode
+}
 
 // props
 const props = defineProps<{
@@ -18,10 +24,6 @@ const props = defineProps<{
 
 // emits
 const emit = defineEmits(["update:modelValue"]);
-
-interface GalleryEx extends Gallery {
-  showMode: GalleryShowMode
-}
 
 // data
 const settings = ref<PickerSettings>({ selectedGallery: "", showMode: GalleryShowMode.All })
@@ -44,15 +46,44 @@ function clickOutsideEventListener(e: MouseEvent) {
 }
 const saveIcon = new URL("../assets/icons8-save-30.png",import.meta.url).href
 
+// methods
+function sortGalleries(galleries:GalleryEx[]): GalleryEx[] {
+  const outGalleries: GalleryEx[] = []
+  // move selected on top if any
+  if (settings.value.selectedGallery !== "") {
+      const idx = galleries.findIndex((g)=>g.slug===settings.value.selectedGallery)
+      if (idx >=0) {
+        outGalleries[0] = galleries.splice(idx,1)[0]
+      }
+    }
+    // move pinned next if any
+    const pinned = galleries.filter((g)=>g.pinned)
+    if (pinned.length>0) {
+      outGalleries.push(...pinned)
+    }
+    // add rest of galleries
+    const rest = galleries.filter((g)=>!g.pinned)
+    if (rest.length>0) {
+      outGalleries.push(...rest)
+    }
+    return outGalleries
+}
+
 // watch
 watch(() => props.modelValue, async (openValue) => {
 
   if (openValue) {
-    const [galls, settingsData] = await Promise.all([
+    let [galls, settingsData] = await Promise.all([
       api.getGalleries(), api.getSettings()
     ]);
     settings.value = settingsData
-    // if selected gallery present move it on top of list
+
+    // set show mode from settings and sort
+    galleries.value = sortGalleries(
+      galls.map((g):GalleryEx => ({ ...g, showMode: settings.value.showMode }))
+    )
+
+    /* if selected gallery present move it on top of list
     if (settings.value.selectedGallery !== "") {
       const idx = galls.findIndex((g)=>g.slug===settings.value.selectedGallery)
       if (idx>=0) {
@@ -60,10 +91,8 @@ watch(() => props.modelValue, async (openValue) => {
         galls.splice(idx,1)
         galls.unshift(elem)
       }
-    }
-    // set show mode from settings
-    galleries.value = galls.map(g => ({ ...g, showMode: settings.value.showMode }));
-
+    } */
+    
     await nextTick()
 
     window.addEventListener("click", clickOutsideEventListener)
@@ -72,6 +101,7 @@ watch(() => props.modelValue, async (openValue) => {
     window.removeEventListener("click", clickOutsideEventListener)
   }
 });
+
 
 // events
 function handleGalleryClick(gallery_id: string) {
@@ -86,6 +116,12 @@ function handleShowModeButtonClick(gallery_id: string, showMode: GalleryShowMode
   settings.value.showMode = showMode
 
 }
+async function handlePinUnpin(gallery_id:string, pin:boolean) {
+  const gallery =  await api.pinUnpinGallery(gallery_id, pin)
+  galleries.value.find((g) => g.slug === gallery_id)!.pinned = gallery.pinned;
+  galleries.value = sortGalleries(galleries.value)
+}
+
 async function handleSettingsSave() {
   if (!settings.value.selectedGallery) {
     return
@@ -108,14 +144,8 @@ async function handleSettingsSave() {
           <a v-for="gallery in galleries" :key="gallery.slug"
             :class="{ selected: gallery.slug === settings.selectedGallery }">
             <span @click="handleGalleryClick(gallery.slug)" class="gallery-title">{{ gallery.title }}</span>
-            <span>
-              <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Marked }"
-                @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Marked)">M</button>
-              <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.Unmarked }"
-                @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.Unmarked)"><s>M</s></button>
-              <button class="show-mode_button" :class="{ button_a: gallery.showMode === GalleryShowMode.All }"
-                @click="handleShowModeButtonClick(gallery.slug, GalleryShowMode.All)">*.*</button>
-            </span>
+            <GalleryActions :show-mode="gallery.showMode" :gallery="gallery"
+              @show-mode-click="handleShowModeButtonClick" @pin-unpin-click="handlePinUnpin"/>
           </a>
         </div>
     </div>
@@ -167,19 +197,6 @@ async function handleSettingsSave() {
   text-decoration: none;
   color: #818181;
   cursor: pointer;
-}
-
-.show-mode_button {
-  cursor: pointer;
-  color: #818181;
-  background-color: inherit;
-  font-size: 0.75em;
-  outline: none;
-  border: none;
-}
-
-.button_a {
-  border: 2px solid red;
 }
 
 .sidenav-content a:hover {
