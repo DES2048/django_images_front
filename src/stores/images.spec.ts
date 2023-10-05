@@ -1,17 +1,17 @@
 import { beforeEach, describe, it, expect, vi, beforeAll } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useImagesStore } from './images'
-import {useSettingsStore} from './settings'
+import { useImagesStore, compareValues } from './images'
+import { useSettingsStore } from './settings'
 import { GalleryShowMode, type ImageInfo } from '@/models';
 
 
 
-beforeAll(()=>{
-    vi.mock("@/api", ()=>{
+beforeAll(() => {
+    vi.mock("@/api", () => {
         const apiMock = {
-            getImages: vi.fn(async (g:string, ss: GalleryShowMode)=>{
-                if (g==='empty') {
-                    return Promise.resolve([]as ImageInfo[])
+            getImages: vi.fn(async (g: string, ss: GalleryShowMode) => {
+                if (g === 'empty') {
+                    return Promise.resolve([] as ImageInfo[])
                 }
                 return Promise.resolve([
                     {
@@ -28,7 +28,7 @@ beforeAll(()=>{
                     }
                 ] as ImageInfo[])
             }),
-            markImage: vi.fn(async (g:string, name:string)=>{
+            markImage: vi.fn(async (g: string, name: string) => {
                 return Promise.resolve({
                     name,
                     url: "1.jpg",
@@ -36,36 +36,47 @@ beforeAll(()=>{
                     mod_date: 1000
                 });
             }),
-            deleteImage:vi.fn(async (g:string, ss: GalleryShowMode)=>{
-                return {ok:true}
+            deleteImage: vi.fn(async (g: string, ss: GalleryShowMode) => {
+                return { ok: true }
             })
         }
-        return {default:apiMock}
+        return { default: apiMock }
     });
-    return ()=>{
+    return () => {
         vi.unmock("@/api")
     }
 });
 
-describe("images store", ()=>{
-    
+describe("images store", () => {
+
     beforeEach(() => {
         // creates a fresh pinia and make it active so it's automatically picked
         // up by any useStore() call without having to pass it to it:
         // `useStore(pinia)`
         setActivePinia(createPinia())
-      })
-    
-    it("initial state", ()=>{
+    })
+
+    it("compareValues()", () => {
+        // compare numbers
+        expect(compareValues(1, 1)).toBe(0)
+        expect(compareValues(1, 2)).toBe(-1)
+        expect(compareValues(2, 1)).toBe(1)
+
+        // compare numbers inverted
+        expect(compareValues(1, 1, true)).toBe(0)
+        expect(compareValues(1, 2, true)).toBe(1)
+        expect(compareValues(2, 1, true)).toBe(-1)
+    })
+    it("initial state", () => {
         const imagesStore = useImagesStore()
         expect(imagesStore.images).toStrictEqual([])
         expect(imagesStore.currentImageIndex).toBe(-1)
         expect(imagesStore.currentImage).toBe(undefined)
     })
-    
-    it("fetch images smoke", async ()=>{
+
+    it("fetch images smoke", async () => {
         const imagesStore = useImagesStore()
-        
+
         await imagesStore.fetchImages("hello", GalleryShowMode.Unmarked);
         // check images is loading
         expect(imagesStore.images.length).toBe(2)
@@ -78,31 +89,31 @@ describe("images store", ()=>{
         expect(imagesStore.currentImage.name).toBe("2");
     })
 
-    it("fetch empty gallery", async ()=>{
+    it("fetch empty gallery", async () => {
         const imagesStore = useImagesStore()
-        
+
         await expect(imagesStore.fetchImages("empty", GalleryShowMode.Unmarked)).rejects
-        .toThrowError("selected gallery did't return any image");
+            .toThrowError("selected gallery did't return any image");
 
     })
 
-    it("next image", async ()=> {
+    it("next image", async () => {
         const imagesStore = useImagesStore()
-        
+
         await imagesStore.fetchImages("hello", GalleryShowMode.Unmarked);
-        
+
         imagesStore.nextImage();
         expect(imagesStore.currentImageIndex).toBe(1);
         // check last index
         imagesStore.nextImage();
         expect(imagesStore.currentImageIndex).toBe(1);
     })
-    
-    it("prev image", async ()=> {
+
+    it("prev image", async () => {
         const imagesStore = useImagesStore()
-        
+
         await imagesStore.fetchImages("hello", GalleryShowMode.Unmarked);
-        
+
         imagesStore.nextImage();
         imagesStore.prevImage();
         expect(imagesStore.currentImageIndex).toBe(0);
@@ -111,7 +122,7 @@ describe("images store", ()=>{
         expect(imagesStore.currentImageIndex).toBe(0);
     })
 
-    it("mark current image show all", async()=>{
+    it("mark current image show all", async () => {
         const imagesStore = useImagesStore()
         const settingsStore = useSettingsStore()
 
@@ -127,7 +138,7 @@ describe("images store", ()=>{
 
     })
 
-    it("mark current image show unmarked", async()=>{
+    it("mark current image show unmarked", async () => {
         const imagesStore = useImagesStore()
         const settingsStore = useSettingsStore()
 
@@ -143,19 +154,19 @@ describe("images store", ()=>{
 
     })
 
-    it("delete image", async()=>{
+    it("delete image", async () => {
         const imagesStore = useImagesStore()
-        const settingsStore = useSettingsStore()
 
         await imagesStore.fetchImages("hello", GalleryShowMode.Unmarked);
-        settingsStore.settings = {
-            showMode: GalleryShowMode.Unmarked,
-            selectedGallery: "hello"
-        }
+        const initialImagesLength = imagesStore.images.length;
+        const imageForDelete = imagesStore.currentImage
 
+        // delete from index 0
         await imagesStore.deleteCurrentImage()
 
-        const deleted = imagesStore.images.find(el=>el.name==="2");
-        expect(deleted).toBe(undefined)
+        // check length decreased by 1
+        expect(imagesStore.images.length).toBe(initialImagesLength - 1);
+        // check no deleted image in images
+        expect(imagesStore.images.find(el => el.name === imageForDelete.name)).toBe(undefined);
     })
 })

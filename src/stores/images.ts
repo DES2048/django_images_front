@@ -6,24 +6,18 @@ import { useSettingsStore } from './settings';
 
 // helpers
 // functions for comparsions
-function invertComparsion(cmp_result:number) {
-  if (cmp_result > 0) {
-    return -1;
-  } else if (cmp_result < 0) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
 
-function compareValues(a:number, b:number) {
+export function compareValues<T extends number|string>(a:T, b:T, invert?:boolean):number {
+  let cmp_result = 0;
   if (a == b) {
-    return 0;
+    cmp_result = 0;
   } else if (a < b) {
-    return -1;
+    cmp_result = -1;
   } else {
-    return 1;
+    cmp_result = 1;
   }
+  // if need inversion return inverted value, ottherwise return cmp_result itself
+  return (cmp_result && invert) ? -cmp_result: cmp_result;
 }
 
 function shuffle(array:any[]) {
@@ -73,8 +67,8 @@ export const useImagesStore = defineStore("images", () => {
       throw new Error("selected gallery did't return any image");  
     }
     
-    imagesData.sort((a, b) => invertComparsion(compareValues(a.mod_date, b.mod_date)));
-    
+    //imagesData.sort((a, b) => invertComparsion(compareValues(a.mod_date, b.mod_date)));
+    imagesData.sort((a, b) => compareValues<number>(a.mod_date, b.mod_date, true));
     images.value = imagesData;
     if (randomMode.value) {
       randomImage();
@@ -201,18 +195,8 @@ export const useImagesStore = defineStore("images", () => {
     // FIXME check response
     await api.deleteImage(settingsStore.settings!.selectedGallery, currentImage.value.name)
   
-    if (true) {
-      images.value.splice(currentImageIndex.value, 1)
-      
-      if (randomMode.value) {
-        randomImage();
-      } else {
-        // move to next if possible
-        if (currentImageIndex.value === images.value.length) {
-          prevImage()
-        }
-      }
-    }
+    images.value.splice(currentImageIndex.value, 1)
+    nextImage()  
   }
 
   return {images, currentImageIndex, imagesLoaded, currentImage, randomMode,

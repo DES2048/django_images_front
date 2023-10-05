@@ -19,6 +19,11 @@ export interface SettingsResponse {
   show_mode: GalleryShowMode
 }
 
+// utility function
+export function fakeDeleteMode(): boolean {
+  const p = new URLSearchParams(window.location.search)
+  return p.has("fake-del")
+}
 class API {
   // TODO Separate class?
   endpoints = {
@@ -52,7 +57,7 @@ class API {
       [CSRF_HEADER_NAME] : this.getCSRFfromCookie()
     }
   }
-  private async doPost<R>(url:URL, body?:any): Promise<R> {
+  public async doPost<R>(url:URL, body?:any): Promise<R> {
     const resp =  await fetch(url, {
       method: 'POST',
       headers: {
@@ -61,8 +66,10 @@ class API {
       },
       body: body ? JSON.stringify(body): undefined
     });
-
-    return await resp.json() as R
+    if (+resp.headers.get("Content-Length")! > 0)
+      return await resp.json() as R
+    else
+      return Promise.resolve() as R
   }
   async getGalleries () {
     const resp = await fetch(this.endpoints.galleries);
@@ -106,6 +113,7 @@ class API {
   }
 
   async deleteImage(gallery:string, url:string) {
+    if(fakeDeleteMode()) return;
     return await this.doPost<void>(this.endpoints.deleteImage(gallery, url))
   }
 }

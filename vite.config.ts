@@ -24,7 +24,7 @@ export default defineConfig(({mode}) => {
       rollupOptions: {
         input: "src/main.ts"
       },
-      outDir: "D:/projects/django_images/frontend_dist",
+      outDir: env.VITE_BUILD_OUT_DIR,
       assetsDir: "",
       emptyOutDir: true,
       sourcemap:true
