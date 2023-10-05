@@ -64,7 +64,6 @@ function confirmDeleteImage() {
   }
 }
 
-// FIXME swipes on whole screen not only in image area
 function onSwipe(dir: string) {
   console.log(dir)
   switch (dir) {

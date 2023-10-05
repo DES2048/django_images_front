@@ -10,10 +10,12 @@ import { ref, watch } from 'vue';
     }>();
 
     const imageLoading = ref(true);
-    
+    const img = ref<HTMLImageElement | null>(null)
     watch(()=>props.imageInfo.name, ()=>{
 
       imageLoading.value = true
+      if(img.value)
+        img.value.style.transform = "scale(1.0)";
     })
 
     
@@ -23,10 +25,10 @@ import { ref, watch } from 'vue';
 </script>
 
 <template>
-    <div class="imageContainer2">
+    <div class="imageContainer2" >
         <div class="image-name">({{(imageIndex+1)}}/{{imagesCount}}) {{ imageInfo.name}}</div>
         <div v-if="imageLoading">Loading image...</div>
-        <img v-show="!imageLoading" :src="imageInfo.url" class="responsive2" @load="onImgLoad"/>
+        <img v-show="!imageLoading" :src="imageInfo.url" class="responsive2" @load="onImgLoad" ref="img"/>
     </div>
 </template>
 
@@ -38,6 +40,7 @@ import { ref, watch } from 'vue';
   flex-direction: column;
   justify-content: start;
   align-items: center;
+  height:100vh;
 }
 
 .image-name {
@@ -47,7 +50,8 @@ import { ref, watch } from 'vue';
 .responsive2 {
   flex-grow: 1;
   max-width: 100%;
-  max-height: 100vh;
+  max-height: calc(100vh - 18px);
+  object-fit: contain;
 }
 
 .responsive {
