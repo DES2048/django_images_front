@@ -128,6 +128,17 @@ export const useImagesStore = defineStore("images", () => {
       currentImageIndex.value = images.value.findIndex((img)=>img.name===imageName)
     }
   }
+  function shuffleImages2() {
+    if (images.value.length>0) {
+      // move current image to first pos
+      [images.value[0], images.value[currentImageIndex.value]] = [
+        images.value[currentImageIndex.value], images.value[0]];
+     
+      // shuffle rest of array
+      images.value = [images.value[0], ...shuffle(images.value.slice(1))]
+      currentImageIndex.value = 0;
+    }
+  }
 
   async function markCurrentImage() {
       
@@ -195,11 +206,10 @@ export const useImagesStore = defineStore("images", () => {
     // FIXME check response
     await api.deleteImage(settingsStore.settings!.selectedGallery, currentImage.value.name)
   
-    images.value.splice(currentImageIndex.value, 1)
-    nextImage()  
+    images.value.splice(currentImageIndex.value, 1) 
   }
 
   return {images, currentImageIndex, imagesLoaded, currentImage, randomMode,
     resetImages, fetchImages, firstImage, lastImage, nextImage, prevImage, 
-    randomImage, shuffleImages, markCurrentImage, unmarkCurrentImage, deleteCurrentImage}
+    randomImage, shuffleImages:shuffleImages2, markCurrentImage, unmarkCurrentImage, deleteCurrentImage}
 })
