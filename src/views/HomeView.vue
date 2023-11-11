@@ -6,7 +6,7 @@ import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/stores/settings";
-import { useSidenavStore } from '@/stores/sidenav'
+import { useUiStore } from '@/stores/ui'
 import { isPickerSettingsEqual } from "@/models";
 
 // stores
@@ -14,7 +14,7 @@ const imagesStore = useImagesStore()
 const { images, currentImageIndex, randomMode } = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
-const sidenavStore = useSidenavStore()
+const uiStore = useUiStore()
 
 // getters
 const { nextImage, prevImage, deleteCurrentImage } = imagesStore;
@@ -101,7 +101,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
 <template>
   <main>
     <div class="container">
-      <Sidenav v-model="sidenavStore.open" />
+      <Sidenav v-model="uiStore.openSidenav" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="!error && images.length" :image-index="currentImageIndex" :images-count="images.length"
         :image-info="images[currentImageIndex]" v-touch:swipe="onSwipe" />

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {computed} from 'vue'
 import { useImagesStore } from '@/stores/images';
-import { useSidenavStore } from '@/stores/sidenav';
+import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
 
 // store
 const imagesStore = useImagesStore()
-const sidenavStore = useSidenavStore()
+const uiStore = useUiStore()
 const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
   deleteCurrentImage, markCurrentImage, unmarkCurrentImage } = imagesStore
 
@@ -46,7 +46,8 @@ async function handleMarkUnmark() {
 
 <template>
   <div class="buttons-panel">
-    <a href="#" class="btn-panel" @click="sidenavStore.open=true">
+   
+    <a href="#" class="btn-panel" @click="uiStore.openSidenav=true">
       <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->
       &#9881;
     </a>
