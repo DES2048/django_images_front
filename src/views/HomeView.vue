@@ -32,7 +32,7 @@ watch(settings, async (newSettings, oldSettings) => {
 
   try {
     // loading images
-    await imagesStore.fetchImages(settings.value!.selectedGallery, settings.value!.showMode);
+    await imagesStore.fetchImages();
   } catch (err) {
     error.value = (err as Error).message
   }
@@ -49,7 +49,7 @@ async function reload() {
     await settingsStore.fetchSettings();
 
     // loading images
-    await imagesStore.fetchImages(settings.value!.selectedGallery, settings.value!.showMode);
+    await imagesStore.fetchImages();
   } catch (err) {
     error.value = (err as Error).message
   }

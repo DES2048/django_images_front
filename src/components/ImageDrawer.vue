@@ -28,7 +28,7 @@ import { ref, watch } from 'vue';
     <div class="imageContainer2" >
         <div class="image-name">({{(imageIndex+1)}}/{{imagesCount}}) {{ imageInfo.name}}</div>
         <div v-if="imageLoading">Loading image...</div>
-        <img v-show="!imageLoading" :src="imageInfo.url" class="responsive2" @load="onImgLoad" ref="img"/>
+        <img v-show="!imageLoading" :src="imageInfo.url" class="responsive2" @load="onImgLoad" ref="img" @error="imageLoading=false"/>
     </div>
 </template>
 

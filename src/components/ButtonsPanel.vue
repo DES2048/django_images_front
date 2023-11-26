@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import {computed} from 'vue'
 import { useImagesStore } from '@/stores/images';
+import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
 
 // store
 const imagesStore = useImagesStore()
+const settingsStore = useSettingsStore()
 const uiStore = useUiStore()
 const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
-  deleteCurrentImage, markCurrentImage, unmarkCurrentImage } = imagesStore
+  deleteCurrentImage, markCurrentImage, unmarkCurrentImage, addCurrentImageToFav,
+  deleteCurrentImageFromFav } = imagesStore
 
 const { randomMode, currentImage, imagesLoaded } = storeToRefs(imagesStore);
+const { settings } = storeToRefs(settingsStore)
 
 const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
@@ -29,7 +33,10 @@ function handleRandomImage() {
 }
 
 async function handleDeleteImage() {
-  if (confirm("Are you sure for delete this image?")) {
+  const confirmMsg = settings.value.favoriteImagesMode ?
+    "Are u sure for delete image from fav?"
+    : "Are you sure for delete this image?"
+  if (confirm(confirmMsg)) {
     await deleteCurrentImage()
   }
 }
@@ -41,6 +48,14 @@ async function handleMarkUnmark() {
     await markCurrentImage();
   else
     await unmarkCurrentImage();
+}
+
+async function handleFavImage() {
+  if (currentImage.value && currentImage.value.is_fav) {
+    await deleteCurrentImageFromFav()
+  } else if ( currentImage.value && !currentImage.value.is_fav) {
+    await addCurrentImageToFav()
+  }
 }
 </script>
 
@@ -57,6 +72,7 @@ async function handleMarkUnmark() {
     <a href="#" class="btn-panel" @click="prevImage">&lt;</a>
     <a href="#" class="btn-panel" @click="nextImage">&gt;</a>
     <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
+    <a v-if="!settings.favoriteImagesMode" href="#" class="btn-panel" @click="handleFavImage" :class="{ 'toggle-btn': currentImage?.is_fav }">F</a>
     <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
     <a href="#" class="btn-panel" :class="{ 'toggle-btn': markToggle }" @click="handleMarkUnmark">&#10004;</a>
   </div>

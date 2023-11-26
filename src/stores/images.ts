@@ -1,53 +1,21 @@
-import { type ImageInfo, GalleryShowMode} from '@/models';
-import { defineStore } from 'pinia'
+import { type ImageInfo, GalleryShowMode, type FavImageInfo} from '@/models';
+import { defineStore, storeToRefs } from 'pinia'
 import { ref, computed } from 'vue';
 import api from '@/api'
 import { useSettingsStore } from './settings';
-
-// helpers
-// functions for comparsions
-
-export function compareValues<T extends number|string>(a:T, b:T, invert?:boolean):number {
-  let cmp_result = 0;
-  if (a == b) {
-    cmp_result = 0;
-  } else if (a < b) {
-    cmp_result = -1;
-  } else {
-    cmp_result = 1;
-  }
-  // if need inversion return inverted value, ottherwise return cmp_result itself
-  return (cmp_result && invert) ? -cmp_result: cmp_result;
-}
-
-function shuffle(array:any[]) {
-  let currentIndex = array.length,  randomIndex;
-
-  // While there remain elements to shuffle.
-  while (currentIndex != 0) {
-
-    // Pick a remaining element.
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    // And swap it with the current element.
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
-  }
-
-  return array;
-}
+import { compareValues, shuffleArray } from '@/utils'
 
 export const useImagesStore = defineStore("images", () => {
+
   // state
-  const images = ref<ImageInfo[]>([])
+  const images = ref<ImageInfo[] | FavImageInfo[]>([])
   const currentImageIndex = ref(-1);
   const randomMode = ref(false)
   const imagesLoaded = ref(false)
 
   // imported stores
   const settingsStore = useSettingsStore()
-
+  const { settings } = storeToRefs(settingsStore)
   // getters
   const currentImage = computed(()=> {
     return images.value[currentImageIndex.value]
@@ -59,17 +27,25 @@ export const useImagesStore = defineStore("images", () => {
     currentImageIndex.value = -1;
     randomMode.value = false
   }
+  
+  async function fetchImages() {
+    const set = settings.value;
+    const imagesData = set.favoriteImagesMode ? 
+      await api.getFavImages() : 
+      await api.getImages(set.selectedGallery, set.showMode);
 
-  async function fetchImages(gallery:string, showMode:GalleryShowMode) {
-    const imagesData = await api.getImages(gallery, showMode);
-
+    // TODO drop error
     if (imagesData.length == 0) {
       throw new Error("selected gallery did't return any image");  
     }
     
-    //imagesData.sort((a, b) => invertComparsion(compareValues(a.mod_date, b.mod_date)));
-    imagesData.sort((a, b) => compareValues<number>(a.mod_date, b.mod_date, true));
-    images.value = imagesData;
+    if (set.favoriteImagesMode) {
+      (imagesData as FavImageInfo[]).sort((a, b) => compareValues<number>(a["add_to_fav_date"], b["add_to_fav_date"], true));
+    } else {
+      (imagesData as ImageInfo[]).sort((a, b) => compareValues<number>(a["mod_date"], b["mod_date"], true));
+    }
+    
+    images.value = imagesData
     if (randomMode.value) {
       randomImage();
     } else {
@@ -123,7 +99,7 @@ export const useImagesStore = defineStore("images", () => {
       // save current image name
       const imageName = currentImage.value.name
       // shuffling
-      images.value = shuffle(images.value.slice())
+      images.value = shuffleArray(images.value.slice())
       // restore right current image index
       currentImageIndex.value = images.value.findIndex((img)=>img.name===imageName)
     }
@@ -135,13 +111,15 @@ export const useImagesStore = defineStore("images", () => {
         images.value[currentImageIndex.value], images.value[0]];
      
       // shuffle rest of array
-      images.value = [images.value[0], ...shuffle(images.value.slice(1))]
+      images.value = [images.value[0], ...shuffleArray(images.value.slice(1))]
       currentImageIndex.value = 0;
     }
   }
 
   async function markCurrentImage() {
-      
+      if (settingsStore.settings.favoriteImagesMode) {
+        return
+      }
       if (!settingsStore.settings) {
         return
       }
@@ -169,7 +147,9 @@ export const useImagesStore = defineStore("images", () => {
       }
   }
   async function unmarkCurrentImage() {
-      
+    if (!settingsStore.settings.favoriteImagesMode) {
+      return
+    }  
     if (!settingsStore.settings) {
       return
     }
@@ -204,12 +184,33 @@ export const useImagesStore = defineStore("images", () => {
     }
 
     // FIXME check response
-    await api.deleteImage(settingsStore.settings!.selectedGallery, currentImage.value.name)
-  
+    if (settingsStore.settings.favoriteImagesMode) {
+      const img = currentImage.value as FavImageInfo
+      await api.deleteImageFromFav(img.gallery, img.name)
+    } else {
+      await api.deleteImage(settingsStore.settings!.selectedGallery, currentImage.value.name)
+    }
+    
     images.value.splice(currentImageIndex.value, 1) 
   }
 
+  // fav
+  async function addCurrentImageToFav() {
+    if (settingsStore.settings && settingsStore.settings.selectedGallery && currentImage.value) {
+      await api.addImageToFav(settingsStore.settings.selectedGallery, currentImage.value.name);
+      currentImage.value.is_fav = true
+    }
+  }
+
+  async function deleteCurrentImageFromFav() {
+    if (settingsStore.settings && settingsStore.settings.selectedGallery && currentImage.value) {
+      await api.deleteImageFromFav(settingsStore.settings.selectedGallery, currentImage.value.name);
+      currentImage.value.is_fav = false
+    }
+  } 
+
   return {images, currentImageIndex, imagesLoaded, currentImage, randomMode,
     resetImages, fetchImages, firstImage, lastImage, nextImage, prevImage, 
-    randomImage, shuffleImages:shuffleImages2, markCurrentImage, unmarkCurrentImage, deleteCurrentImage}
+    randomImage, shuffleImages:shuffleImages2, markCurrentImage, unmarkCurrentImage, deleteCurrentImage,
+    addCurrentImageToFav, deleteCurrentImageFromFav }
 })

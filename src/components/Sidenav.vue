@@ -6,11 +6,12 @@
 */
 
 import api from '@/api';
-import { GalleryShowMode, type Gallery, type PickerSettings } from '@/models';
+import type { GalleryShowMode, Gallery, PickerSettings } from '@/models';
 import { nextTick, ref, watch } from 'vue';
 //import { storeToRefs } from "pinia";
 import { useSettingsStore } from '@/stores/settings';
 import GalleryActions from './GalleryActions.vue';
+import { defaultSettings } from '@/utils';
 
 // types
 interface GalleryEx extends Gallery {
@@ -26,7 +27,7 @@ const props = defineProps<{
 const emit = defineEmits(["update:modelValue"]);
 
 // data
-const settings = ref<PickerSettings>({ selectedGallery: "", showMode: GalleryShowMode.All })
+const settings = ref<PickerSettings>(defaultSettings())
 const galleries = ref<GalleryEx[]>([])
 
 // store
@@ -105,6 +106,7 @@ watch(() => props.modelValue, async (openValue) => {
 
 // events
 function handleGalleryClick(gallery_id: string) {
+  settings.value.favoriteImagesMode = false
   settings.value.selectedGallery = gallery_id
   settings.value.showMode = galleries.value.find((g) => g.slug === gallery_id)!.showMode
 }
@@ -123,7 +125,7 @@ async function handlePinUnpin(gallery_id:string, pin:boolean) {
 }
 
 async function handleSettingsSave() {
-  if (!settings.value.selectedGallery) {
+  if (!settings.value.selectedGallery && !settings.value.favoriteImagesMode) {
     return
   }
   
@@ -141,8 +143,10 @@ async function handleSettingsSave() {
         <a href="#" class="closebtn" id="sidenavClose" @click="$emit('update:modelValue', false)">&times;</a>
       </div>
         <div class="galleries-container">
+          <!-- FAV-->
+          <a href="#" :class="{selected: settings.favoriteImagesMode }" @click="settings.favoriteImagesMode=true">Fav</a>
           <a v-for="gallery in galleries" :key="gallery.slug"
-            :class="{ selected: gallery.slug === settings.selectedGallery }">
+            :class="{ selected: !settings.favoriteImagesMode && gallery.slug === settings.selectedGallery }">
             <span @click="handleGalleryClick(gallery.slug)" class="gallery-title">{{ gallery.title }}</span>
             <GalleryActions :show-mode="gallery.showMode" :gallery="gallery"
               @show-mode-click="handleShowModeButtonClick" @pin-unpin-click="handlePinUnpin"/>

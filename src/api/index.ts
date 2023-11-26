@@ -1,22 +1,17 @@
-import type {GalleryShowMode, ImageInfo, PickerSettings, Gallery} from '../models'
+import type {GalleryShowMode, ImageInfo, PickerSettings, Gallery, FavImageInfo} from '../models'
 import Cookie from 'js-cookie'
-
+import { ClientError, NetworkError, ServerError } from './errors'
 const CSRF_COOKIE_NAME = 'csrftoken'
 const CSRF_HEADER_NAME = 'X-CSRFToken'
 const API_BASE_URL = new URL(import.meta.env.API_BASE_URL ? 
   import.meta.env.API_BASE_URL: document.location.origin)
 
 // TODO helper from SettingsResponse to PickerSettings
-export interface ImageInfoResponse {
-  name:string, 
-  url:string, 
-  marked:boolean, 
-  mod_date:number
-}
-
+// response types
 export interface SettingsResponse {
   selected_gallery:string, 
   show_mode: GalleryShowMode
+  fav_images_mode: boolean
 }
 
 // utility function
@@ -43,7 +38,10 @@ class API {
     },
     unmarkImage(gallery:string, imgName:string) {
       return new URL(`/galleries/${gallery}/images/${imgName}/unmark`, API_BASE_URL);
-    },   
+    },
+    favImage() {
+      return new URL(`/fav-images/`, API_BASE_URL)
+    }   
   }
 
   // TODO Pass endpoints to constuctor
@@ -57,21 +55,37 @@ class API {
       [CSRF_HEADER_NAME] : this.getCSRFfromCookie()
     }
   }
-  public async doPost<R>(url:URL, body?:any): Promise<R> {
-    const resp =  await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.setCSRFToken()
-      },
-      body: body ? JSON.stringify(body): undefined
-    });
+  public async doMethod<R>(method:string, url:URL, body?:any): Promise<R> {
+    let resp: Response;
+    try {
+      resp =  await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.setCSRFToken()
+        },
+        body: body ? JSON.stringify(body): undefined
+      });
+      
+    } catch (err){
+        throw new NetworkError((err as Error).message)
+    }
+    
+    const statusCode = resp.status
+    if(statusCode >= 400 && statusCode <= 499) {
+      throw new ClientError(statusCode, "client error")
+    } else if(statusCode >= 500 && statusCode <=599) {
+      throw new ServerError(statusCode, "server error")
+    }
     if (+resp.headers.get("Content-Length")! > 0)
       return await resp.json() as R
     else
       return Promise.resolve() as R
+  }  
+  public async doPost<R>(url:URL, body?:any): Promise<R> {
+    return await this.doMethod<R>("POST", url, body)
   }
-  async getGalleries () {
+  async getGalleries () : Promise<Gallery[]> {
     const resp = await fetch(this.endpoints.galleries);
     return await resp.json() as Gallery[];
   }
@@ -79,19 +93,28 @@ class API {
     const url = this.endpoints.pinUnpinGallery(gallery, pin)
     return await this.doPost<Gallery>(url)
   }
-  async getSettings () {
+  async getSettings () : Promise<PickerSettings> {
     const resp = await fetch(this.endpoints.settings);
     const data = await resp.json() as SettingsResponse;
-    return {selectedGallery:data.selected_gallery, showMode:data.show_mode} as PickerSettings;
+    return {
+      selectedGallery:data.selected_gallery,
+      showMode:data.show_mode,
+      favoriteImagesMode: data.fav_images_mode
+    }
   }
   
-  async saveSettings (settings:PickerSettings) {
+  async saveSettings (settings:PickerSettings): Promise<PickerSettings> {
     const data =  await this.doPost<SettingsResponse>(this.endpoints.settings, {
         selected_gallery: settings.selectedGallery,
-        show_mode: settings.showMode
+        show_mode: settings.showMode,
+        fav_images_mode: settings.favoriteImagesMode
     })
   
-    return {selectedGallery:data.selected_gallery, showMode:data.show_mode} as PickerSettings;;
+    return { 
+      selectedGallery:data.selected_gallery,
+      showMode:data.show_mode,
+      favoriteImagesMode: data.fav_images_mode
+    };
   }
   /**
    * fetch images, filtered by show_mode
@@ -115,6 +138,24 @@ class API {
   async deleteImage(gallery:string, url:string) {
     if(fakeDeleteMode()) return;
     return await this.doPost<void>(this.endpoints.deleteImage(gallery, url))
+  }
+  // favs
+  async addImageToFav(gallery:string, imgName:string): Promise<ImageInfo> {
+    const url = this.endpoints.favImage()
+    return await this.doMethod("POST", url, {
+      gallery, name: imgName
+    })
+  }
+  async getFavImages(): Promise<FavImageInfo[]> {
+    const url = this.endpoints.favImage()
+    const resp = await fetch(url);
+    return await resp.json() as FavImageInfo[];
+  }
+  async deleteImageFromFav(gallery:string, imgName:string): Promise<void> {
+    const url = this.endpoints.favImage()
+    return await this.doMethod<void>("DELETE", url, {
+      gallery, name: imgName
+    })
   }
 }
 
