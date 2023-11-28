@@ -1,0 +1,42 @@
+name: build-release
+on:
+  push:
+    tags: 'v*'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: setup Node
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: '18'
+      
+      - name: Build Node.js cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+      
+      - name: install and build
+        run: |
+            npm ci
+            npm run build
+      
+      - name: create assets
+        run: |
+          tar -czf frontend_dist.tar.gz frontend_dist/
+          zip -qq -r ./frontend_dist.zip ./frontend_dist
+
+      - name: create and upload assets release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            frontend_dist.zip
+            frontend_dist.tar.gz

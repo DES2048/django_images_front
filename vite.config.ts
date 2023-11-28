@@ -24,7 +24,7 @@ export default defineConfig(({mode}) => {
       rollupOptions: {
         input: "src/main.ts"
       },
-      outDir: env.VITE_BUILD_OUT_DIR,
+      outDir: env.VITE_BUILD_OUT_DIR || 'frontend_dist',
       assetsDir: "",
       emptyOutDir: true,
       sourcemap:true
