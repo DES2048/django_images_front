@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ButtonsPanel from "@/components/ButtonsPanel.vue";
 import ImageDrawer from "@/components/ImageDrawer.vue";
-import Sidenav from "@/components/Sidenav.vue";
+import Sidenav from "@/components/Sidenav2.vue";
 import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
