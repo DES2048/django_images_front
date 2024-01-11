@@ -1,161 +1,154 @@
-import { type ImageInfo, GalleryShowMode, type FavImageInfo} from '@/models';
-import { defineStore, storeToRefs } from 'pinia'
-import { ref, computed } from 'vue';
-import api from '@/api'
-import { useSettingsStore } from './settings';
-import { compareValues, shuffleArray } from '@/utils'
+import { type ImageInfo, GalleryShowMode, type FavImageInfo } from "@/models";
+import { defineStore, storeToRefs } from "pinia";
+import { ref, computed } from "vue";
+import api from "@/api";
+import { useSettingsStore } from "./settings";
+import { compareValues, shuffleArray } from "@/utils";
 
 export const useImagesStore = defineStore("images", () => {
-
   // state
-  const images = ref<ImageInfo[] | FavImageInfo[]>([])
+  const images = ref<ImageInfo[] | FavImageInfo[]>([]);
   const currentImageIndex = ref(-1);
-  const randomMode = ref(false)
-  const imagesLoaded = ref(false)
+  const randomMode = ref(false);
+  const imagesLoaded = ref(false);
 
   // imported stores
-  const settingsStore = useSettingsStore()
-  const { settings } = storeToRefs(settingsStore)
+  const settingsStore = useSettingsStore();
+  const { settings } = storeToRefs(settingsStore);
   // getters
-  const currentImage = computed(()=> {
-    return images.value[currentImageIndex.value]
-  })
+  const currentImage = computed(() => {
+    return images.value[currentImageIndex.value];
+  });
 
   // actions
   function resetImages() {
-    images.value = []
+    images.value = [];
     currentImageIndex.value = -1;
-    randomMode.value = false
+    randomMode.value = false;
   }
-  
+
   async function fetchImages() {
     const set = settings.value;
-    const imagesData = set.favoriteImagesMode ? 
-      await api.getFavImages() : 
-      await api.getImages(set.selectedGallery, set.showMode);
+    const imagesData = set.favoriteImagesMode
+      ? await api.getFavImages()
+      : await api.getImages(set.selectedGallery, set.showMode);
 
     // TODO drop error
     if (imagesData.length == 0) {
-      throw new Error("selected gallery did't return any image");  
+      throw new Error("selected gallery did't return any image");
     }
-    
+
     if (set.favoriteImagesMode) {
-      (imagesData as FavImageInfo[]).sort((a, b) => compareValues<number>(a["add_to_fav_date"], b["add_to_fav_date"], true));
+      (imagesData as FavImageInfo[]).sort((a, b) =>
+        compareValues<number>(a["add_to_fav_date"], b["add_to_fav_date"], true)
+      );
     } else {
-      (imagesData as ImageInfo[]).sort((a, b) => compareValues<number>(a["mod_date"], b["mod_date"], true));
+      (imagesData as ImageInfo[]).sort((a, b) =>
+        compareValues<number>(a.mod_time, b.mod_time, true)
+      );
+      //(imagesData as ImageInfo[]).sort((a, b) => b.mod_time - a.mod_time);
     }
-    
-    images.value = imagesData
+
+    images.value = imagesData;
     if (randomMode.value) {
       randomImage();
     } else {
-      currentImageIndex.value = 0; // set to first 
+      currentImageIndex.value = 0; // set to first
     }
     imagesLoaded.value = true;
   }
 
   function firstImage() {
-    if (currentImageIndex.value >=0) {
+    if (currentImageIndex.value >= 0) {
       currentImageIndex.value = 0;
     }
   }
 
   function lastImage() {
-    if (currentImageIndex.value >=0) {
-      currentImageIndex.value = images.value.length-1;
+    if (currentImageIndex.value >= 0) {
+      currentImageIndex.value = images.value.length - 1;
     }
   }
 
   function nextImage() {
     if (randomMode.value) {
-      randomImage()
-      return
+      randomImage();
+      return;
     }
-    if ((currentImageIndex.value + 1) == images.value.length) {
-      return
+    if (currentImageIndex.value + 1 == images.value.length) {
+      return;
     }
-    currentImageIndex.value++
+    currentImageIndex.value++;
   }
-  
+
   function prevImage() {
     if (randomMode.value) {
-      randomImage()
-      return
+      randomImage();
+      return;
     }
     if (currentImageIndex.value == 0) {
-      return
+      return;
     }
-    currentImageIndex.value--
+    currentImageIndex.value--;
   }
-  
+
   function randomImage() {
-    if (images.value.length>0) {
+    if (images.value.length > 0) {
       currentImageIndex.value = Math.floor(Math.random() * images.value.length);
     }
   }
-  
-  function shuffleImages() {
-    if (images.value.length>0) {
-      // save current image name
-      const imageName = currentImage.value.name
-      // shuffling
-      images.value = shuffleArray(images.value.slice())
-      // restore right current image index
-      currentImageIndex.value = images.value.findIndex((img)=>img.name===imageName)
-    }
-  }
+
   function shuffleImages2() {
-    if (images.value.length>0) {
+    if (images.value.length > 0) {
       // move current image to first pos
       [images.value[0], images.value[currentImageIndex.value]] = [
-        images.value[currentImageIndex.value], images.value[0]];
-     
+        images.value[currentImageIndex.value],
+        images.value[0],
+      ];
+
       // shuffle rest of array
-      images.value = [images.value[0], ...shuffleArray(images.value.slice(1))]
+      images.value = [images.value[0], ...shuffleArray(images.value.slice(1))];
       currentImageIndex.value = 0;
     }
   }
 
   async function markCurrentImage() {
-      if (settingsStore.settings.favoriteImagesMode) {
-        return
-      }
-      if (!settingsStore.settings) {
-        return
-      }
-      if (!currentImage.value)
-        return
+    if (settingsStore.settings.favoriteImagesMode) {
+      return;
+    }
+    if (!settingsStore.settings) {
+      return;
+    }
+    if (!currentImage.value) return;
 
-      const img_info = await api.markImage(
-        settingsStore.settings.selectedGallery,
-        currentImage.value.name
-      );
-  
-      if (settingsStore.settings.showMode == GalleryShowMode.Unmarked) {
-        images.value.splice(currentImageIndex.value, 1);
-        if (randomMode.value) {
-          randomImage();
-        } else {
-          // move to next if possible
-          if (currentImageIndex.value === images.value.length) {
-            prevImage()
-          }
-        }
-        
+    const img_info = await api.markImage(
+      settingsStore.settings.selectedGallery,
+      currentImage.value.name
+    );
+
+    if (settingsStore.settings.showMode == GalleryShowMode.Unmarked) {
+      images.value.splice(currentImageIndex.value, 1);
+      if (randomMode.value) {
+        randomImage();
       } else {
-        images.value[currentImageIndex.value] = img_info;
+        // move to next if possible
+        if (currentImageIndex.value === images.value.length) {
+          prevImage();
+        }
       }
+    } else {
+      images.value[currentImageIndex.value] = img_info;
+    }
   }
   async function unmarkCurrentImage() {
     if (!settingsStore.settings.favoriteImagesMode) {
-      return
-    }  
-    if (!settingsStore.settings) {
-      return
+      return;
     }
-    if (!currentImage.value)
-        return
-    
+    if (!settingsStore.settings) {
+      return;
+    }
+    if (!currentImage.value) return;
+
     const img_info = await api.unmarkImage(
       settingsStore.settings.selectedGallery,
       currentImage.value.name
@@ -168,49 +161,81 @@ export const useImagesStore = defineStore("images", () => {
       } else {
         // move to next if possible
         if (currentImageIndex.value === images.value.length) {
-          prevImage()
+          prevImage();
         }
       }
-      
     } else {
       images.value[currentImageIndex.value] = img_info;
     }
-}
-  
+  }
+
   // TODO throw an error
   async function deleteCurrentImage() {
-    if (currentImageIndex.value <0) {
-      return
+    if (currentImageIndex.value < 0) {
+      return;
     }
 
     // FIXME check response
     if (settingsStore.settings.favoriteImagesMode) {
-      const img = currentImage.value as FavImageInfo
-      await api.deleteImageFromFav(img.gallery, img.name)
+      const img = currentImage.value as FavImageInfo;
+      await api.deleteImageFromFav(img.gallery, img.name);
     } else {
-      await api.deleteImage(settingsStore.settings!.selectedGallery, currentImage.value.name)
+      await api.deleteImage(
+        settingsStore.settings!.selectedGallery,
+        currentImage.value.name
+      );
     }
-    
-    images.value.splice(currentImageIndex.value, 1) 
+
+    images.value.splice(currentImageIndex.value, 1);
   }
 
   // fav
   async function addCurrentImageToFav() {
-    if (settingsStore.settings && settingsStore.settings.selectedGallery && currentImage.value) {
-      await api.addImageToFav(settingsStore.settings.selectedGallery, currentImage.value.name);
-      currentImage.value.is_fav = true
+    if (
+      settingsStore.settings &&
+      settingsStore.settings.selectedGallery &&
+      currentImage.value
+    ) {
+      await api.addImageToFav(
+        settingsStore.settings.selectedGallery,
+        currentImage.value.name
+      );
+      currentImage.value.is_fav = true;
     }
   }
 
   async function deleteCurrentImageFromFav() {
-    if (settingsStore.settings && settingsStore.settings.selectedGallery && currentImage.value) {
-      await api.deleteImageFromFav(settingsStore.settings.selectedGallery, currentImage.value.name);
-      currentImage.value.is_fav = false
+    if (
+      settingsStore.settings &&
+      settingsStore.settings.selectedGallery &&
+      currentImage.value
+    ) {
+      await api.deleteImageFromFav(
+        settingsStore.settings.selectedGallery,
+        currentImage.value.name
+      );
+      currentImage.value.is_fav = false;
     }
-  } 
+  }
 
-  return {images, currentImageIndex, imagesLoaded, currentImage, randomMode,
-    resetImages, fetchImages, firstImage, lastImage, nextImage, prevImage, 
-    randomImage, shuffleImages:shuffleImages2, markCurrentImage, unmarkCurrentImage, deleteCurrentImage,
-    addCurrentImageToFav, deleteCurrentImageFromFav }
-})
+  return {
+    images,
+    currentImageIndex,
+    imagesLoaded,
+    currentImage,
+    randomMode,
+    resetImages,
+    fetchImages,
+    firstImage,
+    lastImage,
+    nextImage,
+    prevImage,
+    randomImage,
+    shuffleImages: shuffleImages2,
+    markCurrentImage,
+    unmarkCurrentImage,
+    deleteCurrentImage,
+    addCurrentImageToFav,
+    deleteCurrentImageFromFav,
+  };
+});
