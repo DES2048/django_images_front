@@ -22,6 +22,9 @@ app.use(createVuetify({
           mdi,
         },
       },
+    display: {
+        mobileBreakpoint: 'sm'
+    }
 }))
 
 app.mount('#app')

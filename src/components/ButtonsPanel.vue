@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
 import { mdiMenu, mdiShuffleVariant } from '@mdi/js'
+import { useDisplay } from'vuetify'
 
 // store
 const imagesStore = useImagesStore()
@@ -19,6 +20,8 @@ const { settings } = storeToRefs(settingsStore)
 
 //const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
+// display
+const { mobile } = useDisplay()
 // computed
 const markToggle = computed(()=>{
   if (!imagesLoaded.value) {
@@ -71,8 +74,8 @@ async function handleFavImage() {
     <a href="#" class="btn-panel" :class="{ 'toggle-btn': randomMode }" @click="handleRandomImage">R</a>
     <a href="#" class="btn-panel" @click="shuffleImages"><v-icon :icon="mdiShuffleVariant" color="rgb(240, 248, 255)"></v-icon></a>
     <a href="#" class="btn-panel" @click="firstImage">&lt;&lt;</a>
-    <a href="#" class="btn-panel" @click="prevImage">&lt;</a>
-    <a href="#" class="btn-panel" @click="nextImage">&gt;</a>
+    <a href="#" class="btn-panel" @click="prevImage" v-if="!mobile">&lt;</a>
+    <a href="#" class="btn-panel" @click="nextImage" v-if="!mobile">&gt;</a>
     <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
     <a v-if="!settings.favoriteImagesMode" href="#" class="btn-panel" @click="handleFavImage" :class="{ 'toggle-btn': currentImage?.is_fav }">F</a>
     <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
