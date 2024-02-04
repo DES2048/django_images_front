@@ -27,6 +27,7 @@ export interface PickerSettings {
   showMode: GalleryShowMode;
   selectedGallery: string;
   favoriteImagesMode: boolean;
+  shufflePicsWhenLoaded: boolean;
 }
 
 export function isPickerSettingsEqual(
@@ -39,6 +40,7 @@ export function isPickerSettingsEqual(
   return (
     s1.selectedGallery == s2.selectedGallery &&
     s1.showMode == s2.showMode &&
-    s1.favoriteImagesMode == s2.favoriteImagesMode
+    s1.favoriteImagesMode == s2.favoriteImagesMode &&
+    s1.shufflePicsWhenLoaded == s2.shufflePicsWhenLoaded
   );
 }

@@ -13,7 +13,7 @@ export default defineConfig(({mode}) => {
       vue(),
       vuetify({ autoImport:{ 
         ignore: [
-          'Touch'
+          //'Touch'
         ]
       }}), // Enabled by default
     ],

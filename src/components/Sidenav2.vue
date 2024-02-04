@@ -8,6 +8,8 @@
 import { nextTick, ref, watch } from "vue";
 import GalleryActions from "./GalleryActions.vue";
 import useSidenav from "@/composables/useSidenav";
+import { useUiStore } from "@/stores/ui";
+import { mdiCog } from '@mdi/js'
 
 // props
 const props = defineProps<{
@@ -27,6 +29,8 @@ const {
   selectGalleryShowMode,
   pinUnpinGallery,
 } = useSidenav();
+
+const uiStore = useUiStore()
 
 // refs
 const sidenavRef = ref<HTMLElement | null>(null);
@@ -62,6 +66,11 @@ async function handleSettingsSave() {
   await saveSettings();
   emit("update:modelValue", false);
 }
+
+function handleOpenSettings() {
+  emit("update:modelValue", false);
+  uiStore.openSettings = true;
+}
 </script>
 
 <template>
@@ -69,6 +78,7 @@ async function handleSettingsSave() {
     <div class="sidenav-content">
       <div class="sidenav-title">
         <h2>Settings</h2>
+        <v-icon :icon="mdiCog" color="rgb(240, 248, 255)" @click="handleOpenSettings"></v-icon>
         <img :src="saveIcon" class="save-button" @click="handleSettingsSave" />
         <a
           href="#"

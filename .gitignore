@@ -12,6 +12,7 @@ node_modules
 dist
 frontend_dist
 dist-ssr
+frontend_dist
 coverage
 *.local
 

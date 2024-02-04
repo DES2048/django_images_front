@@ -35,6 +35,7 @@ export function defaultSettings(): PickerSettings {
   return {
     selectedGallery: '', 
     showMode: GalleryShowMode.All,
-    favoriteImagesMode: false
+    favoriteImagesMode: false,
+    shufflePicsWhenLoaded: false,
   }
 }

@@ -2,12 +2,13 @@
 import ButtonsPanel from "@/components/ButtonsPanel.vue";
 import ImageDrawer from "@/components/ImageDrawer.vue";
 import Sidenav from "@/components/Sidenav2.vue";
+import SettingsDialog from "@/components/SettingsDialog.vue";
 import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from '@/stores/ui'
-import { isPickerSettingsEqual } from "@/models";
+import type { PickerSettings } from "@/models";
 
 // stores
 const imagesStore = useImagesStore()
@@ -22,9 +23,18 @@ const { nextImage, prevImage, deleteCurrentImage } = imagesStore;
 // data
 const error = ref("")
 
+const appSettings = ref<PickerSettings>()
+
+function shouldReloadImages(s1:PickerSettings, s2:PickerSettings) {
+  return (
+    s1.selectedGallery !== s2.selectedGallery ||
+    s1.showMode !== s2.showMode ||
+    s1.favoriteImagesMode !== s2.favoriteImagesMode
+  );
+}
 // watch settings changed
 watch(settings, async (newSettings, oldSettings) => {
-  if (isPickerSettingsEqual(newSettings, oldSettings)) {
+  if (!shouldReloadImages(newSettings, oldSettings)) {
     return
   }
 
@@ -47,6 +57,7 @@ async function reload() {
   try {
     // fetching settings
     await settingsStore.fetchSettings();
+    appSettings.value = {...settings.value};
 
     // loading images
     await imagesStore.fetchImages();
@@ -63,6 +74,10 @@ function confirmDeleteImage() {
     deleteCurrentImage()
   }
 }
+const vTouchSettings = {
+  left: ()=>onSwipe("left"),
+  right: ()=>onSwipe("right")
+}
 
 function onSwipe(dir: string) {
   console.log(dir)
@@ -74,6 +89,8 @@ function onSwipe(dir: string) {
       prevImage()
       break
   }
+
+  
 }
 
 document.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -102,9 +119,10 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
   <main>
     <div class="container">
       <Sidenav v-model="uiStore.openSidenav" />
+      <SettingsDialog v-if="uiStore.openSettings"/>
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="!error && images.length" :image-index="currentImageIndex" :images-count="images.length"
-        :image-info="images[currentImageIndex]" v-touch:swipe="onSwipe" />
+        :image-info="images[currentImageIndex]" v-touch="vTouchSettings" />
       <ButtonsPanel />
     </div>
   </main>

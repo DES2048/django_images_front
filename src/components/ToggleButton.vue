@@ -23,6 +23,7 @@ const emit = defineEmits<{
     font-size: 0.75em;
     outline: none;
     border: none;
+    padding: 0.25em;
 }
 
 .active {

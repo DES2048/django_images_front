@@ -12,6 +12,7 @@ export interface SettingsResponse {
   selected_gallery:string, 
   show_mode: GalleryShowMode
   fav_images_mode: boolean
+  shuffle_pics_when_loaded: boolean
 }
 
 // utility function
@@ -99,21 +100,24 @@ class API {
     return {
       selectedGallery:data.selected_gallery,
       showMode:data.show_mode,
-      favoriteImagesMode: data.fav_images_mode
-    }
+      favoriteImagesMode: data.fav_images_mode,
+      shufflePicsWhenLoaded: data.shuffle_pics_when_loaded
+    } as PickerSettings
   }
   
   async saveSettings (settings:PickerSettings): Promise<PickerSettings> {
     const data =  await this.doPost<SettingsResponse>(this.endpoints.settings, {
         selected_gallery: settings.selectedGallery,
         show_mode: settings.showMode,
-        fav_images_mode: settings.favoriteImagesMode
+        fav_images_mode: settings.favoriteImagesMode,
+        shuffle_pics_when_loaded: settings.shufflePicsWhenLoaded
     })
   
     return { 
       selectedGallery:data.selected_gallery,
       showMode:data.show_mode,
-      favoriteImagesMode: data.fav_images_mode
+      favoriteImagesMode: data.fav_images_mode,
+      shufflePicsWhenLoaded: data.shuffle_pics_when_loaded
     };
   }
   /**

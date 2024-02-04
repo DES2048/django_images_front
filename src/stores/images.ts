@@ -29,7 +29,7 @@ export const useImagesStore = defineStore("images", () => {
 
   async function fetchImages() {
     const set = settings.value;
-    const imagesData = set.favoriteImagesMode
+    let imagesData = set.favoriteImagesMode
       ? await api.getFavImages()
       : await api.getImages(set.selectedGallery, set.showMode);
 
@@ -38,15 +38,20 @@ export const useImagesStore = defineStore("images", () => {
       throw new Error("selected gallery did't return any image");
     }
 
-    if (set.favoriteImagesMode) {
-      (imagesData as FavImageInfo[]).sort((a, b) =>
-        compareValues<number>(a["add_to_fav_date"], b["add_to_fav_date"], true)
-      );
+    if (settings.value.shufflePicsWhenLoaded) {
+      imagesData = shuffleArray(imagesData)
     } else {
-      (imagesData as ImageInfo[]).sort((a, b) =>
-        compareValues<number>(a.mod_time, b.mod_time, true)
-      );
-      //(imagesData as ImageInfo[]).sort((a, b) => b.mod_time - a.mod_time);
+      // sorting
+      if (set.favoriteImagesMode) {
+        (imagesData as FavImageInfo[]).sort((a, b) =>
+          compareValues<number>(a["add_to_fav_date"], b["add_to_fav_date"], true)
+        );
+      } else {
+        (imagesData as ImageInfo[]).sort((a, b) =>
+          compareValues<number>(a.mod_time, b.mod_time, true)
+        );
+        //(imagesData as ImageInfo[]).sort((a, b) => b.mod_time - a.mod_time);
+      }
     }
 
     images.value = imagesData;

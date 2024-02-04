@@ -4,6 +4,7 @@ import { useImagesStore } from '@/stores/images';
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
+import { mdiMenu, mdiShuffleVariant } from '@mdi/js'
 
 // store
 const imagesStore = useImagesStore()
@@ -16,7 +17,7 @@ const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
 const { randomMode, currentImage, imagesLoaded } = storeToRefs(imagesStore);
 const { settings } = storeToRefs(settingsStore)
 
-const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
+//const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
 // computed
 const markToggle = computed(()=>{
@@ -64,10 +65,11 @@ async function handleFavImage() {
    
     <a href="#" class="btn-panel" @click="uiStore.openSidenav=true">
       <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->
-      &#9881;
+      <!--&#9881;-->
+      <v-icon :icon="mdiMenu" color="rgb(240, 248, 255)"></v-icon>
     </a>
     <a href="#" class="btn-panel" :class="{ 'toggle-btn': randomMode }" @click="handleRandomImage">R</a>
-    <a href="#" class="btn-panel" @click="shuffleImages"><img class="shuffle-icon" :src="shuffleIcon" /></a>
+    <a href="#" class="btn-panel" @click="shuffleImages"><v-icon :icon="mdiShuffleVariant" color="rgb(240, 248, 255)"></v-icon></a>
     <a href="#" class="btn-panel" @click="firstImage">&lt;&lt;</a>
     <a href="#" class="btn-panel" @click="prevImage">&lt;</a>
     <a href="#" class="btn-panel" @click="nextImage">&gt;</a>
