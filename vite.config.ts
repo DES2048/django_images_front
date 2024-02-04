@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, splitVendorChunkPlugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 
@@ -11,6 +11,7 @@ export default defineConfig(({mode}) => {
   return {
     plugins: [
       vue(),
+      splitVendorChunkPlugin(),
       vuetify({ autoImport:{ 
         ignore: [
           //'Touch'
