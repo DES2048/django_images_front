@@ -40,6 +40,9 @@ class API {
     unmarkImage(gallery:string, imgName:string) {
       return new URL(`/galleries/${gallery}/images/${imgName}/unmark`, API_BASE_URL);
     },
+    renameImage(gallery:string) {
+      return new URL(`/galleries/${gallery}/images/rename`, API_BASE_URL);
+    },
     favImage() {
       return new URL(`/fav-images/`, API_BASE_URL)
     }   
@@ -138,7 +141,13 @@ class API {
     const url = this.endpoints.unmarkImage(gallery, imgName)
     return await this.doPost<ImageInfo>(url) 
   }
-
+  async renameImage(gallery:string, oldName:string, newName:string): Promise<ImageInfo> {
+    const url = this.endpoints.renameImage(gallery)
+    return await this.doPost(url, {
+      old_name: oldName,
+      new_name: newName
+    })
+  }
   async deleteImage(gallery:string, url:string) {
     if(fakeDeleteMode()) return;
     return await this.doPost<void>(this.endpoints.deleteImage(gallery, url))
