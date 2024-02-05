@@ -63,6 +63,14 @@ export const useImagesStore = defineStore("images", () => {
     imagesLoaded.value = true;
   }
 
+  function goToIndex(index: number) {
+    if (index < 0 || index >= images.value.length)
+    {
+      return
+    }
+    currentImageIndex.value = index
+  }
+
   function firstImage() {
     if (currentImageIndex.value >= 0) {
       currentImageIndex.value = 0;
@@ -314,6 +322,7 @@ export const useImagesStore = defineStore("images", () => {
     randomMode,
     resetImages,
     fetchImages,
+    goToIndex,
     firstImage,
     lastImage,
     nextImage,

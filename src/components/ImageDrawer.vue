@@ -1,54 +1,92 @@
 <script setup lang="ts">
-import type { ImageInfo } from '@/models';
-import { ref, watch } from 'vue';
-import { mdiPencil } from '@mdi/js'
-import { useImagesStore } from '@/stores/images';
+import type { ImageInfo } from "@/models";
+import { ref, watch } from "vue";
+import { mdiPencil } from "@mdi/js";
+import { useImagesStore } from "@/stores/images";
 
 // props: image info, image index, images count, error
 const props = defineProps<{
-  imageIndex: number,
-  imagesCount: number,
-  imageInfo: ImageInfo,
+  imageIndex: number;
+  imagesCount: number;
+  imageInfo: ImageInfo;
 }>();
 
 // stores
-const imagesStore = useImagesStore()
+const imagesStore = useImagesStore();
 
 // data
 const imageLoading = ref(true);
-const imageRenameDialogVisible = ref(false)
-const newImageName = ref("")
+const imageRenameDialogVisible = ref(false);
+const newImageName = ref("");
+const showGoToIndex = ref(false);
+const newImageIndex = ref(1);
 
-const img = ref<HTMLImageElement | null>(null)
-watch(() => props.imageInfo.name, () => {
+const img = ref<HTMLImageElement | null>(null);
+watch(
+  () => props.imageInfo.name,
+  () => {
+    imageLoading.value = true;
+    if (img.value) img.value.style.transform = "scale(1.0)";
+  }
+);
 
-  imageLoading.value = true
-  if (img.value)
-    img.value.style.transform = "scale(1.0)";
-})
-
-
+watch(showGoToIndex, (v) => {
+  if (v) newImageIndex.value = props.imageIndex + 1;
+});
 function onImgLoad() {
   imageLoading.value = false;
 }
 
 function showRenameImageDialog() {
-  newImageName.value = props.imageInfo.name
+  newImageName.value = props.imageInfo.name;
   imageRenameDialogVisible.value = true;
-  
 }
 
+function handleNewImageNameFocus(event) {
+  const text = event.target.value;
+  // get extension pos
+  let extStart = text.lastIndexOf(".");
+
+  if (text[extStart - 1] === "_") {
+    extStart--;
+  }
+
+  if (extStart > 0) {
+    event.target.setSelectionRange(0, extStart);
+  }
+}
 async function handleNewImageName() {
   imageRenameDialogVisible.value = false;
 
   if (newImageName.value === props.imageInfo.name) {
-    return
+    return;
   }
   if (!newImageName.value.trim()) {
-    return
+    return;
   }
 
-  await imagesStore.renameCurrentImage(newImageName.value);  
+  await imagesStore.renameCurrentImage(newImageName.value);
+}
+
+function requiredRule(v: any): boolean | string {
+  return !!v || "Required";
+}
+
+function newImageIndexRule(v: number): boolean | string {
+  if (v > 0 && v <= imagesStore.images.length) {
+    return true;
+  }
+  return `Index should be between 1 and ${imagesStore.images.length}`;
+}
+
+function handleGoToIndex() {
+  if (
+    newImageIndex.value > 0 &&
+    newImageIndex.value <= imagesStore.images.length
+  ) {
+    imagesStore.goToIndex(newImageIndex.value - 1);
+    showGoToIndex.value = false;
+  }
 }
 </script>
 
@@ -57,8 +95,12 @@ async function handleNewImageName() {
     <v-dialog v-model="imageRenameDialogVisible">
       <template v-slot:default="{ isActive }">
         <v-card title="Input new name">
-
-          <v-text-field v-model="newImageName" :rules="[(v)=>!!v || 'required']"></v-text-field>
+          <v-text-field
+            v-model="newImageName"
+            :rules="[(v) => !!v || 'required']"
+            autofocus
+            @focus="handleNewImageNameFocus"
+          ></v-text-field>
           <v-card-actions>
             <v-spacer></v-spacer>
 
@@ -68,13 +110,43 @@ async function handleNewImageName() {
         </v-card>
       </template>
     </v-dialog>
+    <v-dialog v-model="showGoToIndex">
+      <template v-slot:default="{ isActive }">
+        <v-card title="Image index:">
+          <v-text-field
+            type="number"
+            v-model="newImageIndex"
+            :rules="[requiredRule, newImageIndexRule]"
+            autofocus
+          ></v-text-field>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+
+            <v-btn text="Close" @click="isActive.value = false"></v-btn>
+            <v-btn text="OK" @click="handleGoToIndex"></v-btn>
+          </v-card-actions>
+        </v-card>
+      </template>
+    </v-dialog>
     <div class="image-name">
-      <span>({{ (imageIndex + 1) }}/{{ imagesCount }}) {{ imageInfo.name }}</span>
-      <v-icon :icon="mdiPencil" color="rgb(240, 248, 255)" @click="showRenameImageDialog"></v-icon>
+      <span @click="showGoToIndex = true">
+        ({{ imageIndex + 1 }}/{{ imagesCount }}) {{ imageInfo.name }}
+      </span>
+      <v-icon
+        :icon="mdiPencil"
+        color="rgb(240, 248, 255)"
+        @click="showRenameImageDialog"
+      ></v-icon>
     </div>
     <div v-if="imageLoading">Loading image...</div>
-    <img v-show="!imageLoading" :src="imageInfo.url" class="responsive2" @load="onImgLoad" ref="img"
-      @error="imageLoading = false" />
+    <img
+      v-show="!imageLoading"
+      :src="imageInfo.url"
+      class="responsive2"
+      @load="onImgLoad"
+      ref="img"
+      @error="imageLoading = false"
+    />
   </div>
 </template>
 
