@@ -1,6 +1,6 @@
 import type {GalleryShowMode, ImageInfo, PickerSettings, Gallery, FavImageInfo} from '../models'
 import Cookie from 'js-cookie'
-import { ClientError, NetworkError, ServerError } from './errors'
+import { ClientError, NetworkError, ServerError, ValidationError } from './errors'
 const CSRF_COOKIE_NAME = 'csrftoken'
 const CSRF_HEADER_NAME = 'X-CSRFToken'
 const API_BASE_URL = new URL(import.meta.env.API_BASE_URL ? 
@@ -76,7 +76,14 @@ class API {
     }
     
     const statusCode = resp.status
+    
     if(statusCode >= 400 && statusCode <= 499) {
+      if (statusCode === 400) {
+        // create validation error
+        const errors = await resp.json() as {[index:string]:string[]}
+        const {"common-errors":commonErrors, ...fieldErrors} = errors;
+        throw new ValidationError(fieldErrors, commonErrors)
+      }
       throw new ClientError(statusCode, "client error")
     } else if(statusCode >= 500 && statusCode <=599) {
       throw new ServerError(statusCode, "server error")

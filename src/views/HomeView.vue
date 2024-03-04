@@ -3,6 +3,7 @@ import ButtonsPanel from "@/components/ButtonsPanel.vue";
 import ImageDrawer from "@/components/ImageDrawer.vue";
 import Sidenav from "@/components/Sidenav2.vue";
 import SettingsDialog from "@/components/SettingsDialog.vue";
+import RenameImageDialog from "@/components/RenameImageDialog.vue";
 import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
@@ -120,6 +121,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     <div class="container">
       <Sidenav v-model="uiStore.openSidenav" />
       <SettingsDialog v-if="uiStore.openSettings"/>
+      <RenameImageDialog v-if="uiStore.openRenameImage" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="!error && images.length" :image-index="currentImageIndex" :images-count="images.length"
         :image-info="images[currentImageIndex]" v-touch="vTouchSettings" />

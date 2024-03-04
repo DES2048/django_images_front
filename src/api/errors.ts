@@ -1,5 +1,5 @@
-export type StrDictionary = {
-    [index: string]: string
+export type ErrorsList = {
+    [index: string]: string[]
 }
 
 export class ApiError extends Error {
@@ -26,12 +26,12 @@ export class ClientError extends ApiError {
     }
 }
 export class ValidationError extends ClientError{
-    fieldErrors: StrDictionary = {}
-    commonErrors: StrDictionary = {}
-    constructor(commonErrors:StrDictionary, fieldErrors:StrDictionary) {
+    fieldErrors: ErrorsList = {}
+    commonErrors?: string[]
+    constructor(fieldErrors?:ErrorsList, commonErrors?:string[]) {
         super(400)
         this.commonErrors = commonErrors
-        this.fieldErrors = fieldErrors
+        this.fieldErrors = fieldErrors || {}
     }
 }
 export class NotFoundError extends ClientError {
