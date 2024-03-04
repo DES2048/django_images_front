@@ -10,6 +10,7 @@ const imagesStore = useImagesStore()
 
 const newImageName = ref("");
 const nameErrors = ref<string[]>()
+const inProcess = ref(false)
 
 watch(() => uiStore.openRenameImage, (value) => {
     if (value) {
@@ -41,6 +42,7 @@ async function handleRename() {
     }
 
     try {
+        inProcess.value = true
         await imagesStore.renameCurrentImage(newImageName.value);
         uiStore.openRenameImage = false
     } catch (error) {
@@ -49,6 +51,8 @@ async function handleRename() {
         } else {
             //throw error
         }
+    } finally {
+        inProcess.value = false
     }
 
 }
@@ -60,7 +64,7 @@ async function handleRename() {
             <v-form @submit.prevent="handleRename">
                 <v-card title="Input new name">
                     <v-text-field v-model="newImageName" :rules="[(v) => !!v || 'required']" autofocus
-                        @focus="handleFocus" :error-messages="nameErrors">
+                        @focus="handleFocus" :error-messages="nameErrors" :loading="inProcess">
                     </v-text-field>
                     <v-card-actions>
                         <v-spacer />
