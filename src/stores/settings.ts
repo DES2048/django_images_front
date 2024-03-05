@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import api from '@/api'
 import { isPickerSettingsEqual, type PickerSettings } from "@/models";
 import { defaultSettings } from "@/utils";
+import { getObjectFromStorage, saveGallerySettings, setObjectToStorage } from "@/storage";
 
 const SETTINGS_KEY = "settings"
 
@@ -14,21 +15,29 @@ export const useSettingsStore = defineStore("settings", () => {
   // actions
   async function fetchSettings() {
     // get local settings if any
-    const settingsStr = localStorage.getItem(SETTINGS_KEY)
-    let localSettings;
+
     let data;
-    if (settingsStr) {
-      localSettings = <PickerSettings>JSON.parse(settingsStr)
+    const localSettings = getObjectFromStorage<PickerSettings>(SETTINGS_KEY)
+    if (localSettings) {
       data = localSettings
     } else {
       data = await api.getSettings();
     }
-    
+
     if (!data.selectedGallery && !data.favoriteImagesMode) {
       throw new Error("Pick gallery in sidenav")
-    } else if(!localSettings) { // settings valid
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(data))
     }
+
+    if (!localSettings) { // settings valid
+      setObjectToStorage(SETTINGS_KEY, data)
+    }
+    // set gallery settings
+    if (!data.favoriteImagesMode) {
+      saveGallerySettings(data.selectedGallery, {
+        lastShowMode: data.showMode,
+      })
+    }
+
     settings.value = data;
   }
 
@@ -40,6 +49,10 @@ export const useSettingsStore = defineStore("settings", () => {
     settings.value = await api.saveSettings(newSettings);
     // store settings to local storage
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings.value));
+    if(!settings.value.favoriteImagesMode) {
+      saveGallerySettings(settings.value.selectedGallery, {
+        lastShowMode: settings.value.showMode})
+    }
   }
 
   return { settings, fetchSettings, saveSettings }

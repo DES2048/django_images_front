@@ -1,5 +1,7 @@
 import { GalleryShowMode, type PickerSettings } from "./models";
 
+export const DEFAULT_SHOW_MODE = GalleryShowMode.Unmarked;
+
 export function compareValues<T extends number | string >(a: T, b: T, invert?: boolean): number {
   let cmp_result = 0;
   if (a == b) {
@@ -34,7 +36,7 @@ export function shuffleArray(array: any[]) {
 export function defaultSettings(): PickerSettings {
   return {
     selectedGallery: '', 
-    showMode: GalleryShowMode.All,
+    showMode: DEFAULT_SHOW_MODE,
     favoriteImagesMode: false,
     shufflePicsWhenLoaded: false,
   }

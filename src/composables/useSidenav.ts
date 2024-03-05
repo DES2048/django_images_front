@@ -2,7 +2,8 @@ import api from "@/api";
 import type { GalleryShowMode, Gallery, PickerSettings } from "@/models";
 import { ref } from "vue";
 import { useSettingsStore } from "@/stores/settings";
-import { defaultSettings } from "@/utils";
+import { DEFAULT_SHOW_MODE, defaultSettings } from "@/utils";
+import { getGalleriesSettings } from "@/storage";
 
 // types
 export interface SidenavGallery extends Gallery {
@@ -51,11 +52,15 @@ export default function useSidenav() {
     settings.value = settingsData;
 
     // set show mode from settings and sort
+    const galleriesSettings = getGalleriesSettings()
+
     galleries.value = sortGalleries(
       galls.map(
-        (g): SidenavGallery => ({ ...g, showMode: settings.value.showMode })
-      )
-    );
+        (g): SidenavGallery => {
+          return { ...g, showMode: galleriesSettings[g.slug]?.lastShowMode || DEFAULT_SHOW_MODE }
+        })
+    )
+
 
     /* if selected gallery present move it on top of list
       if (settings.value.selectedGallery !== "") {

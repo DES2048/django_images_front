@@ -30,6 +30,15 @@ export interface PickerSettings {
   shufflePicsWhenLoaded: boolean;
 }
 
+export interface GallerySettings {
+  lastShowMode: GalleryShowMode
+  shufflePicsWhenLoaded: boolean
+}
+
+export interface GalleriesLocalSettings {
+  [index:string]: GallerySettings
+}
+
 export function isPickerSettingsEqual(
   s1: PickerSettings,
   s2?: PickerSettings
