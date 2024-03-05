@@ -170,64 +170,9 @@ export const useImagesStore = defineStore("images", () => {
 
   async function markCurrentImage() {
     markUnmarkCurrentImage(true);
-    return;
-    if (settingsStore.settings.favoriteImagesMode) {
-      return;
-    }
-    if (!settingsStore.settings) {
-      return;
-    }
-    if (!currentImage.value) return;
-
-    const img_info = await api.markImage(
-      settingsStore.settings.selectedGallery,
-      currentImage.value.name
-    );
-
-    if (settingsStore.settings.showMode == GalleryShowMode.Unmarked) {
-      images.value.splice(currentImageIndex.value, 1);
-      if (randomMode.value) {
-        randomImage();
-      } else {
-        // move to next if possible
-        if (currentImageIndex.value === images.value.length) {
-          prevImage();
-        }
-      }
-    } else {
-      images.value[currentImageIndex.value] = img_info;
-    }
   }
   async function unmarkCurrentImage() {
     markUnmarkCurrentImage(false);
-    return;
-
-    if (!settingsStore.settings.favoriteImagesMode) {
-      return;
-    }
-    if (!settingsStore.settings) {
-      return;
-    }
-    if (!currentImage.value) return;
-
-    const img_info = await api.unmarkImage(
-      settingsStore.settings.selectedGallery,
-      currentImage.value.name
-    );
-
-    if (settingsStore.settings.showMode == GalleryShowMode.Marked) {
-      images.value.splice(currentImageIndex.value, 1);
-      if (randomMode.value) {
-        randomImage();
-      } else {
-        // move to next if possible
-        if (currentImageIndex.value === images.value.length) {
-          prevImage();
-        }
-      }
-    } else {
-      images.value[currentImageIndex.value] = img_info;
-    }
   }
 
   async function renameCurrentImage(newName: string) {
