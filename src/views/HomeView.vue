@@ -10,6 +10,7 @@ import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from '@/stores/ui'
 import type { PickerSettings } from "@/models";
+import CopyMoveToGalleryDialog from "@/components/CopyMoveToGalleryDialog.vue";
 
 // stores
 const imagesStore = useImagesStore()
@@ -122,6 +123,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
       <Sidenav v-model="uiStore.openSidenav" />
       <SettingsDialog v-if="uiStore.openSettings"/>
       <RenameImageDialog v-if="uiStore.openRenameImage" />
+      <CopyMoveToGalleryDialog v-if="uiStore.openCopyMoveToGallery" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="!error && images.length" :image-index="currentImageIndex" :images-count="images.length"
         :image-info="images[currentImageIndex]" v-touch="vTouchSettings" />

@@ -43,6 +43,9 @@ class API {
     renameImage(gallery:string) {
       return new URL(`/galleries/${gallery}/images/rename`, API_BASE_URL);
     },
+    copyMoveImage(srcGallery:string) {
+      return new URL(`galleries/${srcGallery}/images/copy-move`, API_BASE_URL)
+    },
     favImage() {
       return new URL(`/fav-images/`, API_BASE_URL)
     }   
@@ -153,6 +156,14 @@ class API {
     return await this.doPost(url, {
       old_name: oldName,
       new_name: newName
+    })
+  }
+  async copyMoveImage(srcGallery:string, dstGallery: string, imageName:string, move: boolean) {
+    const url = this.endpoints.copyMoveImage(srcGallery)
+    return await this.doPost<void>(url, {
+      dst_gallery: dstGallery,
+      image_name: imageName,
+      move
     })
   }
   async deleteImage(gallery:string, url:string) {

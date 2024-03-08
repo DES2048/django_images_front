@@ -15,10 +15,16 @@ export const useImagesStore = defineStore("images", () => {
   // imported stores
   const settingsStore = useSettingsStore();
   const { settings } = storeToRefs(settingsStore);
+  
   // getters
   const currentImage = computed(() => {
     return images.value[currentImageIndex.value];
   });
+
+  const currentGallery = computed(()=>{
+    return settings.value.favoriteImagesMode ? (currentImage.value as FavImageInfo).gallery
+      : settings.value.selectedGallery
+  })
 
   // actions
   function resetImages() {
@@ -264,6 +270,7 @@ export const useImagesStore = defineStore("images", () => {
     currentImageIndex,
     imagesLoaded,
     currentImage,
+    currentGallery,
     randomMode,
     resetImages,
     fetchImages,

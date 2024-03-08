@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {computed} from 'vue'
+import { computed, ref } from 'vue'
 import { useImagesStore } from '@/stores/images';
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
-import { mdiMenu, mdiShuffleVariant } from '@mdi/js'
-import { useDisplay } from'vuetify'
+import { mdiMenu, mdiShuffleVariant, mdiDotsVertical } from '@mdi/js'
+import { useDisplay } from 'vuetify'
 
 // store
 const imagesStore = useImagesStore()
@@ -18,12 +18,14 @@ const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
 const { randomMode, currentImage, imagesLoaded } = storeToRefs(imagesStore);
 const { settings } = storeToRefs(settingsStore)
 
+// data
+const openMenu = ref(false)
 //const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
 // display
 const { mobile } = useDisplay()
 // computed
-const markToggle = computed(()=>{
+const markToggle = computed(() => {
   if (!imagesLoaded.value) {
     return false;
   } else {
@@ -57,7 +59,7 @@ async function handleMarkUnmark() {
 async function handleFavImage() {
   if (currentImage.value && currentImage.value.is_fav) {
     await deleteCurrentImageFromFav()
-  } else if ( currentImage.value && !currentImage.value.is_fav) {
+  } else if (currentImage.value && !currentImage.value.is_fav) {
     await addCurrentImageToFav()
   }
 }
@@ -65,21 +67,35 @@ async function handleFavImage() {
 
 <template>
   <div class="buttons-panel">
-   
-    <a href="#" class="btn-panel" @click="uiStore.openSidenav=true">
+
+    <a href="#" class="btn-panel" @click="uiStore.openSidenav = true">
       <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->
       <!--&#9881;-->
       <v-icon :icon="mdiMenu" color="rgb(240, 248, 255)"></v-icon>
     </a>
     <a href="#" class="btn-panel" :class="{ 'toggle-btn': randomMode }" @click="handleRandomImage">R</a>
-    <a href="#" class="btn-panel" @click="shuffleImages"><v-icon :icon="mdiShuffleVariant" color="rgb(240, 248, 255)"></v-icon></a>
+    <a href="#" class="btn-panel" @click="shuffleImages"><v-icon :icon="mdiShuffleVariant"
+        color="rgb(240, 248, 255)"></v-icon></a>
     <a href="#" class="btn-panel" @click="firstImage">&lt;&lt;</a>
     <a href="#" class="btn-panel" @click="prevImage" v-if="!mobile">&lt;</a>
     <a href="#" class="btn-panel" @click="nextImage" v-if="!mobile">&gt;</a>
     <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
-    <a v-if="!settings.favoriteImagesMode" href="#" class="btn-panel" @click="handleFavImage" :class="{ 'toggle-btn': currentImage?.is_fav }">F</a>
+    <a v-if="!settings.favoriteImagesMode" href="#" class="btn-panel" @click="handleFavImage"
+      :class="{ 'toggle-btn': currentImage?.is_fav }">F</a>
     <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
     <a href="#" class="btn-panel" :class="{ 'toggle-btn': markToggle }" @click="handleMarkUnmark">&#10004;</a>
+    
+    <v-menu>
+      <template v-slot:activator="{props}">
+        <v-icon :icon="mdiDotsVertical" v-bind="props"
+        color="rgb(240, 248, 255)"></v-icon>
+      </template>
+      <v-list>
+        <v-list-item @click="uiStore.openCopyMoveToGallery=true">
+          <v-list-item-title>Copy/Move</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
