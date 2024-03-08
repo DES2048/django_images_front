@@ -1,8 +1,15 @@
-import { createVuetify } from 'vuetify'
+import { createVuetify, type ThemeDefinition } from 'vuetify'
 //import * as components from 'vuetify/components'
 //import * as directives from 'vuetify/directives'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import 'vuetify/styles'
+
+const darkTheme: ThemeDefinition = {
+  dark:true,
+  colors: {
+    primary: "#818181"
+  }
+}
 
 const vuetify = createVuetify({
     //components,
@@ -16,6 +23,12 @@ const vuetify = createVuetify({
       },
     display: {
         mobileBreakpoint: 'sm'
+    },
+    theme: {
+      defaultTheme: "darkTheme",
+      themes: {
+        darkTheme
+      }
     }
 })
 

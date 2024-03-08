@@ -87,8 +87,7 @@ async function handleFavImage() {
     
     <v-menu>
       <template v-slot:activator="{props}">
-        <v-icon :icon="mdiDotsVertical" v-bind="props"
-        color="rgb(240, 248, 255)"></v-icon>
+        <v-icon :icon="mdiDotsVertical" v-bind="props"></v-icon>
       </template>
       <v-list>
         <v-list-item @click="uiStore.openCopyMoveToGallery=true">
