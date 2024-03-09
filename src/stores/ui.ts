@@ -6,8 +6,8 @@ export const useUiStore = defineStore("sidenav", ()=> {
     const openSettings = ref(false)
     const openRenameImage = ref(false)
     const openCopyMoveToGallery = ref(false)
-
+    const openGoToImage = ref(false)
     return {
-        openSidenav, openSettings, openRenameImage, openCopyMoveToGallery
+        openSidenav, openSettings, openRenameImage, openCopyMoveToGallery, openGoToImage
     }
 })

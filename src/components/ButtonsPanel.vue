@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useImagesStore } from '@/stores/images';
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui';
@@ -18,8 +18,6 @@ const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
 const { randomMode, currentImage, imagesLoaded } = storeToRefs(imagesStore);
 const { settings } = storeToRefs(settingsStore)
 
-// data
-const openMenu = ref(false)
 //const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
 // display
