@@ -11,7 +11,7 @@ export default defineConfig(({mode}) => {
   return {
     plugins: [
       vue(),
-      splitVendorChunkPlugin(),
+      //splitVendorChunkPlugin(),
       vuetify({ autoImport:{ 
         ignore: [
           //'Touch'
@@ -31,7 +31,13 @@ export default defineConfig(({mode}) => {
     build: {
       manifest: true,
       rollupOptions: {
-        input: "src/main.ts"
+        input: "src/main.ts",
+        output: {
+          manualChunks: {
+            vue: ['vue', 'vue-router', 'pinia'],
+            vuetify: ['vuetify'],
+          }
+        }
       },
       outDir: env.VITE_BUILD_OUT_DIR || 'frontend_dist',
       assetsDir: "",
