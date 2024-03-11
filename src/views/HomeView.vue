@@ -2,17 +2,17 @@
 import ButtonsPanel from "@/components/ButtonsPanel.vue";
 import ImageDrawer from "@/components/ImageDrawer.vue";
 import Sidenav from "@/components/Sidenav2.vue";
-import SettingsDialog from "@/components/SettingsDialog.vue";
-import RenameImageDialog from "@/components/RenameImageDialog.vue";
+import SettingsDialog from "@/components/dialogs/SettingsDialog.vue";
+import RenameImageDialog from "@/components/dialogs/RenameImageDialog.vue";
 import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiStore } from '@/stores/ui'
 import type { PickerSettings } from "@/models";
-import CopyMoveToGalleryDialog from "@/components/CopyMoveToGalleryDialog.vue";
-import GoToImageDialog from "@/components/GoToImageDialog.vue";
-import AddEditGalleryDialog from "@/components/AddEditGalleryDialog.vue";
+import CopyMoveToGalleryDialog from "@/components/dialogs/CopyMoveToGalleryDialog.vue";
+import GoToImageDialog from "@/components/dialogs/GoToImageDialog.vue";
+import AddEditGalleryDialog from "@/components/dialogs/AddEditGalleryDialog.vue";
 
 // stores
 const imagesStore = useImagesStore()
