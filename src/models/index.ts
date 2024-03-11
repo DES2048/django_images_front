@@ -9,6 +9,7 @@ export interface Gallery {
   title: string;
   pinned: boolean;
   pinned_date?: number;
+  dir_path:string
 }
 
 export interface ImageInfo {

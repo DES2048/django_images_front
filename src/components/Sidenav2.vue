@@ -9,7 +9,7 @@ import { nextTick, ref, watch } from "vue";
 import GalleryActions from "./GalleryActions.vue";
 import useSidenav from "@/composables/useSidenav";
 import { useUiStore } from "@/stores/ui";
-import { mdiCog } from '@mdi/js'
+import { mdiCog, mdiPlusCircleOutline } from '@mdi/js'
 
 // props
 const props = defineProps<{
@@ -71,6 +71,10 @@ function handleOpenSettings() {
   emit("update:modelValue", false);
   uiStore.openSettings = true;
 }
+function handleAddGalllery() {
+  uiStore.addMode = true
+  uiStore.openAddEditGallery = true
+}
 </script>
 
 <template>
@@ -79,6 +83,7 @@ function handleOpenSettings() {
       <div class="sidenav-title">
         <h2>Settings</h2>
         <v-icon :icon="mdiCog" color="rgb(240, 248, 255)" @click="handleOpenSettings"></v-icon>
+        <v-icon :icon="mdiPlusCircleOutline" color="rgb(240, 248, 255)" @click="handleAddGalllery"></v-icon>
         <img :src="saveIcon" class="save-button" @click="handleSettingsSave" />
         <a
           href="#"

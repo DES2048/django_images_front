@@ -3,6 +3,7 @@ import Cookie from 'js-cookie'
 import { ClientError, NetworkError, ServerError, ValidationError } from './errors'
 import type { APIEndpoints } from './endpoints'
 import endpoints from './endpoints'
+import type { AddGalleryPayload, UpdateGalleryPayload } from './payloads'
 
 const CSRF_COOKIE_NAME = 'csrftoken'
 const CSRF_HEADER_NAME = 'X-CSRFToken'
@@ -76,6 +77,19 @@ class API {
   async getGalleries(): Promise<Gallery[]> {
     const resp = await fetch(this.endpoints.galleries());
     return await resp.json() as Gallery[];
+  }
+  async addGallery(payload:AddGalleryPayload): Promise<Gallery> {
+    return await this.doPost<Gallery>(this.endpoints.galleries(), payload)
+  }
+  async getGallery(galleryId:string): Promise<Gallery> {
+    const resp = await fetch(this.endpoints.gallery(galleryId))
+    return await resp.json() as Gallery
+  }
+  async updateGallery(galleryId:string, payload:UpdateGalleryPayload): Promise<Gallery> {
+    return await this.doMethod<Gallery>("PATCH",this.endpoints.gallery(galleryId), payload)
+  }
+  async deleteGallery(galleryId:string): Promise<void> {
+    return await this.doMethod<void>("DELETE",this.endpoints.gallery(galleryId))
   }
   async pinUnpinGallery(gallery: string, pin: boolean): Promise<Gallery> {
     const url = this.endpoints.pinUnpinGallery(gallery, pin)

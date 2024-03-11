@@ -6,6 +6,7 @@ const API_BASE_URL = new URL(import.meta.env.API_BASE_URL ?
 export interface APIEndpoints {
     settings(): URL
     galleries(): URL
+    gallery(gallery:string): URL
     pinUnpinGallery(gallery:string, pin:boolean): URL
     images(gallery:string, show_mode:GalleryShowMode): URL
     deleteImage(gallery:string, imgName:string): URL
@@ -19,6 +20,7 @@ export interface APIEndpoints {
 const endpoints:APIEndpoints = {
     settings: ()=> new URL("/settings/", API_BASE_URL),
     galleries: ()=> new URL("/galleries/", API_BASE_URL),
+    gallery: (gallery:string)=> new URL(`/galleries/${gallery}`, API_BASE_URL),
     pinUnpinGallery(gallery:string, pin:boolean) {
       return new URL(`/galleries/${gallery}/${pin ? 'pin': 'unpin'}`, API_BASE_URL);
     },
