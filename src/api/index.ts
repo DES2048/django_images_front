@@ -1,12 +1,9 @@
 import type { GalleryShowMode, ImageInfo, PickerSettings, Gallery, FavImageInfo } from '../models'
-import Cookie from 'js-cookie'
-import { ClientError, NetworkError, ServerError, ValidationError } from './errors'
 import type { APIEndpoints } from './endpoints'
 import endpoints from './endpoints'
+import HttpHelper from './helper'
 import type { AddGalleryPayload, UpdateGalleryPayload } from './payloads'
 
-const CSRF_COOKIE_NAME = 'csrftoken'
-const CSRF_HEADER_NAME = 'X-CSRFToken'
 
 // TODO helper from SettingsResponse to PickerSettings
 // response types
@@ -29,47 +26,8 @@ class API {
   constructor(endpoints: APIEndpoints) {
     this.endpoints = endpoints
   }
-  private getCSRFfromCookie() {
-    return Cookie.get(CSRF_COOKIE_NAME)!;
-  }
-  private setCSRFToken() {
-    return {
-      [CSRF_HEADER_NAME]: this.getCSRFfromCookie()
-    }
-  }
   public async doMethod<R>(method: string, url: URL, body?: any): Promise<R> {
-    let resp: Response;
-    try {
-      resp = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.setCSRFToken()
-        },
-        body: body ? JSON.stringify(body) : undefined
-      });
-
-    } catch (err) {
-      throw new NetworkError((err as Error).message)
-    }
-
-    const statusCode = resp.status
-
-    if (statusCode >= 400 && statusCode <= 499) {
-      if (statusCode === 400) {
-        // create validation error
-        const errors = await resp.json() as { [index: string]: string[] }
-        const { "common-errors": commonErrors, ...fieldErrors } = errors;
-        throw new ValidationError(fieldErrors, commonErrors)
-      }
-      throw new ClientError(statusCode, "client error")
-    } else if (statusCode >= 500 && statusCode <= 599) {
-      throw new ServerError(statusCode, "server error")
-    }
-    if (+resp.headers.get("Content-Length")! > 0)
-      return await resp.json() as R
-    else
-      return Promise.resolve() as R
+   return await HttpHelper.doMethod<R>(method, url, body)
   }
   public async doPost<R>(url: URL, body?: any): Promise<R> {
     return await this.doMethod<R>("POST", url, body)
