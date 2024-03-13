@@ -15,6 +15,7 @@ export interface APIEndpoints {
     renameImage(gallery:string): URL
     copyMoveImage(srcGallery:string): URL
     favImage(): URL
+    tags(): URL
 }
 
 const endpoints:APIEndpoints = {
@@ -44,7 +45,10 @@ const endpoints:APIEndpoints = {
     },
     favImage() {
       return new URL(`/fav-images/`, API_BASE_URL)
-    }   
+    },
+    tags() {
+        return new URL(`/tags`, API_BASE_URL)
+    }, 
   }
 
   export default endpoints

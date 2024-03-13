@@ -1,6 +1,7 @@
 import type { GalleryShowMode, ImageInfo, PickerSettings, Gallery, FavImageInfo } from '../models'
 import type { APIEndpoints } from './endpoints'
 import endpoints from './endpoints'
+import tagsApi from './tags'
 import HttpHelper from './helper'
 import type { AddGalleryPayload, UpdateGalleryPayload } from './payloads'
 
@@ -136,4 +137,5 @@ class API {
   }
 }
 
+export {tagsApi}
 export default new API(endpoints)

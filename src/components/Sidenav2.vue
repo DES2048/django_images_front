@@ -5,11 +5,13 @@
     2) рефактор кнопок для showMode
 */
 
-import { nextTick, ref, watch } from "vue";
+import { nextTick, ref, watch, watchEffect } from "vue";
 import GalleryActions from "./GalleryActions.vue";
 import useSidenav from "@/composables/useSidenav";
 import { useUiStore } from "@/stores/ui";
 import { mdiCog, mdiPlusCircleOutline } from '@mdi/js'
+import type { Tag } from "@/models";
+import { tagsApi } from "@/api";
 
 // props
 const props = defineProps<{
@@ -29,6 +31,9 @@ const {
   selectGalleryShowMode,
   pinUnpinGallery,
 } = useSidenav();
+
+const tab = ref<"galleries" | "tags">("galleries")
+const tags = ref<Tag[]>()
 
 const uiStore = useUiStore()
 
@@ -51,7 +56,11 @@ watch(
   async (openValue) => {
     if (openValue) {
       // set show mode from settings and sort
-      await fetchData();
+      if (tab.value === "galleries") {
+        await fetchData();
+      } else if (tab.value === "tags") {
+        tags.value = await tagsApi.list()
+      }
       await nextTick();
 
       window.addEventListener("click", clickOutsideEventListener);
@@ -61,6 +70,14 @@ watch(
     }
   }
 );
+
+watchEffect(async () => {
+  if(tab.value === "galleries") {
+    galleries.value.length > 0 || await fetchData()
+  } else if(tab.value === "tags") {
+    tags.value || (tags.value =  await tagsApi.list())
+  }
+})
 
 async function handleSettingsSave() {
   await saveSettings();
@@ -81,45 +98,46 @@ function handleAddGalllery() {
   <div class="sidenav" :class="{ 'sidenav-open': modelValue }" ref="sidenavRef">
     <div class="sidenav-content">
       <div class="sidenav-title">
-        <h2>Settings</h2>
+        <h2>Menu</h2>
         <v-icon :icon="mdiCog" color="rgb(240, 248, 255)" @click="handleOpenSettings"></v-icon>
         <v-icon :icon="mdiPlusCircleOutline" color="rgb(240, 248, 255)" @click="handleAddGalllery"></v-icon>
         <img :src="saveIcon" class="save-button" @click="handleSettingsSave" />
-        <a
-          href="#"
-          class="closebtn"
-          id="sidenavClose"
-          @click="$emit('update:modelValue', false)"
-          >&times;</a
-        >
+        <a href="#" class="closebtn" id="sidenavClose" @click="$emit('update:modelValue', false)">&times;</a>
       </div>
       <div class="galleries-container">
-        <!-- FAV-->
-        <a
-          href="#"
-          :class="{ selected: settings.favoriteImagesMode }"
-          @click="settings.favoriteImagesMode = true"
-          >Fav</a
-        >
-        <a
-          v-for="gallery in galleries"
-          :key="gallery.slug"
-          :class="{
-            selected:
-              !settings.favoriteImagesMode &&
-              gallery.slug === settings.selectedGallery,
-          }"
-        >
-          <span @click="selectGallery(gallery.slug)" class="gallery-title">{{
-            gallery.title
-          }}</span>
-          <GalleryActions
-            :show-mode="gallery.showMode"
-            :gallery="gallery"
-            @show-mode-click="selectGalleryShowMode"
-            @pin-unpin-click="pinUnpinGallery"
-          />
-        </a>
+        <v-tabs v-model="tab" grow>
+          <v-tab value="galleries">
+            Galleries
+          </v-tab>
+          <v-tab value="tags">
+            Tags
+          </v-tab>
+        </v-tabs>
+        <v-window v-model="tab">
+          <v-window-item value="galleries">
+            <!-- FAV-->
+            <a href="#" :class="{ selected: settings.favoriteImagesMode }"
+              @click="settings.favoriteImagesMode = true">Fav</a>
+            <a v-for="gallery in galleries" :key="gallery.slug" :class="{
+    selected:
+      !settings.favoriteImagesMode &&
+      gallery.slug === settings.selectedGallery,
+  }">
+              <span @click="selectGallery(gallery.slug)" class="gallery-title">{{
+    gallery.title
+  }}</span>
+              <GalleryActions :show-mode="gallery.showMode" :gallery="gallery" @show-mode-click="selectGalleryShowMode"
+                @pin-unpin-click="pinUnpinGallery" />
+            </a>
+          </v-window-item>
+          <v-window-item value="tags">
+            <v-chip-group selected-class="text-primary" column>
+              <v-chip v-for="tag in tags" :key="tag.name" variant="outlined">
+                {{ tag.name }}
+              </v-chip>
+            </v-chip-group>
+          </v-window-item>
+        </v-window>
       </div>
     </div>
   </div>
@@ -151,10 +169,12 @@ function handleAddGalllery() {
   width: 100%;
   max-width: 430px;
 }
+
 .save-button {
   cursor: pointer;
   margin-left: 0.5rem;
 }
+
 .sidenav-content {
   padding: 10px 10px 10px 30px;
   box-sizing: border-box;
@@ -193,21 +213,27 @@ function handleAddGalllery() {
   margin-left: auto;
   font-weight: 600;
 }
+
 /* galleries */
 .galleries-container {
   flex: 1 1 auto;
   max-height: 100vh;
   overflow-y: auto;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .galleries-container::-webkit-scrollbar {
   display: none;
 }
+
 .gallery-title {
   flex-grow: 1;
 }
+
 /* The navigation menu links */
 .galleries-container a {
   padding: 8px 0px 8px 0px;
@@ -217,6 +243,7 @@ function handleAddGalllery() {
   display: flex;
   justify-content: space-between;
 }
+
 .galleries-container a.selected {
   border: 1px solid #f1f1f1;
 }

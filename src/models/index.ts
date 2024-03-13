@@ -24,6 +24,10 @@ export interface FavImageInfo extends ImageInfo {
   gallery: string;
   add_to_fav_date: number;
 }
+
+export interface Tag {
+  name: string
+}
 export interface PickerSettings {
   showMode: GalleryShowMode;
   selectedGallery: string;
