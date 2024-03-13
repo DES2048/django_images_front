@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { mdiPencil } from "@mdi/js";
+import { mdiPencil, mdiTag } from "@mdi/js";
 import { useImagesStore } from "@/stores/images";
 import { useUiStore } from "@/stores/ui";
 import { storeToRefs } from "pinia";
@@ -42,6 +42,7 @@ function onImgLoad() {
         ({{ currentImageIndex + 1 }}/{{ images.length }}) {{ currentImage.name || "" }}
       </span>
       <v-icon :icon="mdiPencil" @click="uiStore.openRenameImage=true"></v-icon>
+      <v-icon :icon="mdiTag" @click="uiStore.openImageTags=true" />
     </div>
     <div v-if="imageLoading">Loading image...</div>
     <img v-show="!imageLoading" :src="currentImage.url" class="responsive2" @load="onImgLoad" ref="img"

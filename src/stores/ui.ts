@@ -10,9 +10,10 @@ export const useUiStore = defineStore("sidenav", ()=> {
     const openAddEditGallery = ref(false)
     const addMode = ref(true)
     const editGalleryId = ref("")
+    const openImageTags = ref(false)
 
     return {
         openSidenav, openSettings, openRenameImage, openCopyMoveToGallery, openGoToImage,
-        openAddEditGallery, addMode, editGalleryId
+        openAddEditGallery, addMode, editGalleryId, openImageTags
     }
 })

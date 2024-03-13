@@ -13,6 +13,7 @@ import type { PickerSettings } from "@/models";
 import CopyMoveToGalleryDialog from "@/components/dialogs/CopyMoveToGalleryDialog.vue";
 import GoToImageDialog from "@/components/dialogs/GoToImageDialog.vue";
 import AddEditGalleryDialog from "@/components/dialogs/AddEditGalleryDialog.vue";
+import ImageTagsDialog from "@/components/dialogs/ImageTagsDialog.vue";
 
 // stores
 const imagesStore = useImagesStore()
@@ -128,6 +129,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
       <CopyMoveToGalleryDialog v-if="uiStore.openCopyMoveToGallery" />
       <GoToImageDialog v-if="uiStore.openGoToImage" />
       <AddEditGalleryDialog v-if="uiStore.openAddEditGallery" />
+      <ImageTagsDialog v-if="uiStore.openImageTags" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="!error && images.length" v-touch="vTouchSettings" />
       <ButtonsPanel />

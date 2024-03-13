@@ -1,4 +1,4 @@
-import type { GalleryShowMode, ImageInfo, PickerSettings, Gallery, FavImageInfo } from '../models'
+import type { GalleryShowMode, ImageInfo, PickerSettings, Gallery, FavImageInfo, Tag } from '../models'
 import type { APIEndpoints } from './endpoints'
 import endpoints from './endpoints'
 import tagsApi from './tags'
@@ -28,7 +28,7 @@ class API {
     this.endpoints = endpoints
   }
   public async doMethod<R>(method: string, url: URL, body?: any): Promise<R> {
-   return await HttpHelper.doMethod<R>(method, url, body)
+    return await HttpHelper.doMethod<R>(method, url, body)
   }
   public async doPost<R>(url: URL, body?: any): Promise<R> {
     return await this.doMethod<R>("POST", url, body)
@@ -37,18 +37,18 @@ class API {
     const resp = await fetch(this.endpoints.galleries());
     return await resp.json() as Gallery[];
   }
-  async addGallery(payload:AddGalleryPayload): Promise<Gallery> {
+  async addGallery(payload: AddGalleryPayload): Promise<Gallery> {
     return await this.doPost<Gallery>(this.endpoints.galleries(), payload)
   }
-  async getGallery(galleryId:string): Promise<Gallery> {
+  async getGallery(galleryId: string): Promise<Gallery> {
     const resp = await fetch(this.endpoints.gallery(galleryId))
     return await resp.json() as Gallery
   }
-  async updateGallery(galleryId:string, payload:UpdateGalleryPayload): Promise<Gallery> {
-    return await this.doMethod<Gallery>("PATCH",this.endpoints.gallery(galleryId), payload)
+  async updateGallery(galleryId: string, payload: UpdateGalleryPayload): Promise<Gallery> {
+    return await this.doMethod<Gallery>("PATCH", this.endpoints.gallery(galleryId), payload)
   }
-  async deleteGallery(galleryId:string): Promise<void> {
-    return await this.doMethod<void>("DELETE",this.endpoints.gallery(galleryId))
+  async deleteGallery(galleryId: string): Promise<void> {
+    return await this.doMethod<void>("DELETE", this.endpoints.gallery(galleryId))
   }
   async pinUnpinGallery(gallery: string, pin: boolean): Promise<Gallery> {
     const url = this.endpoints.pinUnpinGallery(gallery, pin)
@@ -88,6 +88,16 @@ class API {
     const resp = await fetch(_url);
     return await resp.json() as ImageInfo[];
 
+  }
+  async getImageTags(gallery: string, imgName: string): Promise<Tag[]> {
+    const resp = await fetch(this.endpoints.imageTags(gallery, imgName))
+    return await resp.json() as Tag[]
+  }
+  async updateImageTags(gallery: string, imgName: string, tags: Tag[]): Promise<void> {
+    return await this.doPost<void>(this.endpoints.imageTags(gallery, imgName), {
+      tags: tags.map((t) => t.name)
+    }
+    )
   }
   async markImage(gallery: string, imgName: string): Promise<ImageInfo> {
     const url = this.endpoints.markImage(gallery, imgName)
@@ -137,5 +147,5 @@ class API {
   }
 }
 
-export {tagsApi}
+export { tagsApi }
 export default new API(endpoints)

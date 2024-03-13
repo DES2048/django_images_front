@@ -9,6 +9,7 @@ export interface APIEndpoints {
     gallery(gallery:string): URL
     pinUnpinGallery(gallery:string, pin:boolean): URL
     images(gallery:string, show_mode:GalleryShowMode): URL
+    imageTags(gallery:string, imgName:string): URL
     deleteImage(gallery:string, imgName:string): URL
     markImage(gallery:string, imgName:string): URL
     unmarkImage(gallery:string, imgName:string): URL
@@ -42,6 +43,9 @@ const endpoints:APIEndpoints = {
     },
     copyMoveImage(srcGallery:string) {
       return new URL(`galleries/${srcGallery}/images/copy-move`, API_BASE_URL)
+    },
+    imageTags(gallery:string, imgName:string) {
+      return new URL(`/galleries/${gallery}/images/${imgName}/tags`, API_BASE_URL);
     },
     favImage() {
       return new URL(`/fav-images/`, API_BASE_URL)
