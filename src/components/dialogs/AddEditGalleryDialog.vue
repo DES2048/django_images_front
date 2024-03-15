@@ -2,13 +2,9 @@
 import { computed, reactive, ref, watchEffect } from 'vue';
 import { useUiStore } from '@/stores/ui';
 import api from '@/api';
-import { ValidationError } from '@/api/errors';
+import { ValidationError, validationErrorHandler, type ToFieldErrors } from '@/api/errors';
 
-type Errors<T> = {
-    [Property in keyof T]: string[]
-}
-type AddGalleryErrors = Errors<Omit<typeof data.value, "pinned">>
-type ErrorsKeys = keyof typeof errors;
+type AddGalleryErrors = ToFieldErrors<Omit<typeof data.value, "pinned">>
 
 const uiStore = useUiStore()
 let data = ref({
@@ -43,10 +39,7 @@ const rules = uiStore.addMode ? [requiredRule] : []
 
 function handleErrors(err: unknown) {
     if (err instanceof ValidationError) {
-        for (let field of Object.keys(errors)) {
-            errors[field as ErrorsKeys] = err.fieldErrors[field]
-        }
-
+        validationErrorHandler(err, errors)
     }
 }
 async function handle() {
