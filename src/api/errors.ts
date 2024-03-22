@@ -56,3 +56,9 @@ export function validationErrorHandler(err:ValidationError, fieldErrors:FieldErr
             fieldErrors[field] = err.fieldErrors![field]
         }
     }
+
+    export function resetFieldErrors(errors:FieldErrors) {
+        for(let key in Object.keys(errors)) {
+            errors[key] = []
+        }
+    }

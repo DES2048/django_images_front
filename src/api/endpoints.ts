@@ -1,4 +1,5 @@
 import type { GalleryShowMode } from "@/models";
+import type { ImagesFilter } from "./payloads";
 
 const API_BASE_URL = new URL(import.meta.env.API_BASE_URL ?
     import.meta.env.API_BASE_URL: document.location.origin)
@@ -8,7 +9,7 @@ export interface APIEndpoints {
     galleries(): URL
     gallery(gallery:string): URL
     pinUnpinGallery(gallery:string, pin:boolean): URL
-    images(gallery:string, show_mode:GalleryShowMode): URL
+    images(gallery:string, show_mode:GalleryShowMode, filter:ImagesFilter): URL
     imageTags(gallery:string, imgName:string): URL
     deleteImage(gallery:string, imgName:string): URL
     markImage(gallery:string, imgName:string): URL
@@ -26,8 +27,16 @@ const endpoints:APIEndpoints = {
     pinUnpinGallery(gallery:string, pin:boolean) {
       return new URL(`/galleries/${gallery}/${pin ? 'pin': 'unpin'}`, API_BASE_URL);
     },
-    images(gallery:string, show_mode:GalleryShowMode) {
-      return new URL(`/galleries/${gallery}/images/?show_mode=${show_mode}`, API_BASE_URL);
+    images(gallery:string, show_mode:GalleryShowMode, filter:ImagesFilter) {
+     
+      const url = new URL(`/galleries/${gallery}/images/?show_mode=${show_mode}`, API_BASE_URL);
+      if (filter.tags) {
+        for (let tagId of filter.tags) {
+          url.searchParams.append("tags", tagId.toString())
+        }
+       
+      }
+      return url
     },
     deleteImage(gallery:string, imgName:string) {
       return new URL(`/delete-image/${gallery}/${imgName}`, API_BASE_URL);  
@@ -51,7 +60,7 @@ const endpoints:APIEndpoints = {
       return new URL(`/fav-images/`, API_BASE_URL)
     },
     tags() {
-        return new URL(`/tags`, API_BASE_URL)
+        return new URL(`/tags/`, API_BASE_URL)
     }, 
   }
 

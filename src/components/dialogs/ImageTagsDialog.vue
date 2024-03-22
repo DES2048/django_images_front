@@ -19,7 +19,7 @@ watchEffect(async () => {
         const tagsData = await api.getImageTags(imagesStore.currentGallery, imagesStore.currentImage.name)
 
         for(let tag of tagsData){
-            const idx = tags.value.findIndex((t)=>t.name ===tag.name)
+            const idx = tags.value.findIndex((t)=>t.id ===tag.id)
             if(idx>=0) {
                 selectedTags.value.push(idx)
             }
@@ -41,7 +41,7 @@ async function handle() {
                 <v-card title="Edit tags">
                     <v-chip-group v-model="selectedTags" selected-class="text-primary" column multiple
                     center-active>
-                        <v-chip v-for="tag in tags" :key="tag.name" variant="outlined" filter>
+                        <v-chip v-for="tag in tags" :key="tag.id" variant="outlined" filter>
                             {{ tag.name }}
                         </v-chip>
                     </v-chip-group>

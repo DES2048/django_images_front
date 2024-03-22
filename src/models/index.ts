@@ -26,11 +26,13 @@ export interface FavImageInfo extends ImageInfo {
 }
 
 export interface Tag {
+  id: number
   name: string
 }
 export interface PickerSettings {
   showMode: GalleryShowMode;
   selectedGallery: string;
+  selectedTags: number[];
   favoriteImagesMode: boolean;
   shufflePicsWhenLoaded: boolean;
 }
@@ -55,6 +57,8 @@ export function isPickerSettingsEqual(
     s1.selectedGallery == s2.selectedGallery &&
     s1.showMode == s2.showMode &&
     s1.favoriteImagesMode == s2.favoriteImagesMode &&
-    s1.shufflePicsWhenLoaded == s2.shufflePicsWhenLoaded
+    s1.shufflePicsWhenLoaded == s2.shufflePicsWhenLoaded &&
+    JSON.stringify(s1.selectedTags?.sort()) == JSON.stringify(s2.selectedTags?.sort()) // HACK for array
+    // comparsion
   );
 }

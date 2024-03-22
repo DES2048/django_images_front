@@ -14,6 +14,7 @@ import CopyMoveToGalleryDialog from "@/components/dialogs/CopyMoveToGalleryDialo
 import GoToImageDialog from "@/components/dialogs/GoToImageDialog.vue";
 import AddEditGalleryDialog from "@/components/dialogs/AddEditGalleryDialog.vue";
 import ImageTagsDialog from "@/components/dialogs/ImageTagsDialog.vue";
+import AddEditTagDialog from "@/components/dialogs/AddEditTagDialog.vue";
 
 // stores
 const imagesStore = useImagesStore()
@@ -34,7 +35,8 @@ function shouldReloadImages(s1:PickerSettings, s2:PickerSettings) {
   return (
     s1.selectedGallery !== s2.selectedGallery ||
     s1.showMode !== s2.showMode ||
-    s1.favoriteImagesMode !== s2.favoriteImagesMode
+    s1.favoriteImagesMode !== s2.favoriteImagesMode ||
+    JSON.stringify(s1.selectedTags?.sort()) !== JSON.stringify(s2.selectedTags?.sort())
   );
 }
 // watch settings changed
@@ -65,7 +67,7 @@ async function reload() {
     appSettings.value = {...settings.value};
 
     // loading images
-    await imagesStore.fetchImages();
+    //await imagesStore.fetchImages();
   } catch (err) {
     error.value = (err as Error).message
   }
@@ -130,6 +132,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
       <GoToImageDialog v-if="uiStore.openGoToImage" />
       <AddEditGalleryDialog v-if="uiStore.openAddEditGallery" />
       <ImageTagsDialog v-if="uiStore.openImageTags" />
+      <AddEditTagDialog v-if="uiStore._openAddEditTag" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageDrawer v-if="!error && images.length" v-touch="vTouchSettings" />
       <ButtonsPanel />

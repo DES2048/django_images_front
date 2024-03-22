@@ -5,12 +5,11 @@
     2) рефактор кнопок для showMode
 */
 
-import { nextTick, ref, watch, watchEffect } from "vue";
+import { nextTick, ref, watch } from "vue";
 import GalleryActions from "./GalleryActions.vue";
 import useSidenav from "@/composables/useSidenav";
 import { useUiStore } from "@/stores/ui";
-import { mdiCog, mdiPlusCircleOutline } from '@mdi/js'
-import type { Tag } from "@/models";
+import { mdiCog, mdiPlusCircleOutline, mdiPlusCircle, mdiFilter } from '@mdi/js'
 import { tagsApi } from "@/api";
 
 // props
@@ -25,15 +24,15 @@ const emit = defineEmits(["update:modelValue"]);
 const {
   settings,
   galleries,
+  tags,
+  selectedTags,
   fetchData,
   saveSettings,
   selectGallery,
   selectGalleryShowMode,
   pinUnpinGallery,
+  currentTab
 } = useSidenav();
-
-const tab = ref<"galleries" | "tags">("galleries")
-const tags = ref<Tag[]>()
 
 const uiStore = useUiStore()
 
@@ -56,11 +55,12 @@ watch(
   async (openValue) => {
     if (openValue) {
       // set show mode from settings and sort
-      if (tab.value === "galleries") {
+      //if (currentTab.value === "galleries") {
         await fetchData();
-      } else if (tab.value === "tags") {
-        tags.value = await tagsApi.list()
-      }
+      //} else if (currentTab.value === "tags") {
+        //tags.value = await tagsApi.list()
+        //selectedTags.value = settings.value.selectedTags
+      //}
       await nextTick();
 
       window.addEventListener("click", clickOutsideEventListener);
@@ -71,11 +71,22 @@ watch(
   }
 );
 
-watchEffect(async () => {
-  if(tab.value === "galleries") {
+watch(currentTab ,async () => {
+  if (currentTab.value === "galleries") {
     galleries.value.length > 0 || await fetchData()
-  } else if(tab.value === "tags") {
-    tags.value || (tags.value =  await tagsApi.list())
+  } else if (currentTab.value === "tags") {
+    tags.value || (tags.value = await tagsApi.list())
+    if (!selectedTags.value.length) {
+      const ss:number[] = []
+      for(let [idx, tag] of tags.value.entries()) {
+        
+        if (settings.value.selectedTags.includes(tag.id)) {
+          ss.push(idx)
+        }
+      }
+      selectedTags.value = ss
+    }
+    
   }
 })
 
@@ -105,15 +116,16 @@ function handleAddGalllery() {
         <a href="#" class="closebtn" id="sidenavClose" @click="$emit('update:modelValue', false)">&times;</a>
       </div>
       <div class="galleries-container">
-        <v-tabs v-model="tab" grow>
+        <v-tabs v-model="currentTab" grow>
           <v-tab value="galleries">
             Galleries
           </v-tab>
           <v-tab value="tags">
+            <v-icon :icon="mdiFilter" color="red" v-if="settings.selectedTags?.length" />
             Tags
           </v-tab>
         </v-tabs>
-        <v-window v-model="tab">
+        <v-window v-model="currentTab">
           <v-window-item value="galleries">
             <!-- FAV-->
             <a href="#" :class="{ selected: settings.favoriteImagesMode }"
@@ -131,8 +143,9 @@ function handleAddGalllery() {
             </a>
           </v-window-item>
           <v-window-item value="tags">
-            <v-chip-group selected-class="text-primary" column>
-              <v-chip v-for="tag in tags" :key="tag.name" variant="outlined">
+            <v-chip-group v-model="selectedTags" selected-class="text-primary" column multiple>
+              <v-icon :icon="mdiPlusCircle" @click="uiStore.openAddEditTag(true)"/>
+              <v-chip v-for="tag in tags" :key="tag.id" variant="outlined" filter>
                 {{ tag.name }}
               </v-chip>
             </v-chip-group>

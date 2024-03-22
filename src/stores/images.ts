@@ -37,7 +37,9 @@ export const useImagesStore = defineStore("images", () => {
     const set = settings.value;
     let imagesData = set.favoriteImagesMode
       ? await api.getFavImages()
-      : await api.getImages(set.selectedGallery, set.showMode);
+      : await api.getImages(set.selectedGallery, set.showMode, {
+        tags: settings.value.selectedTags || undefined
+      });
 
     // TODO drop error
     if (imagesData.length == 0) {

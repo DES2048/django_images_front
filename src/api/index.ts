@@ -3,7 +3,7 @@ import type { APIEndpoints } from './endpoints'
 import endpoints from './endpoints'
 import tagsApi from './tags'
 import HttpHelper from './helper'
-import type { AddGalleryPayload, UpdateGalleryPayload } from './payloads'
+import type { AddGalleryPayload, ImagesFilter, UpdateGalleryPayload } from './payloads'
 
 
 // TODO helper from SettingsResponse to PickerSettings
@@ -13,6 +13,7 @@ export interface SettingsResponse {
   show_mode: GalleryShowMode
   fav_images_mode: boolean
   shuffle_pics_when_loaded: boolean
+  selected_tags: number[]
 }
 
 // utility function
@@ -57,11 +58,13 @@ class API {
   async getSettings(): Promise<PickerSettings> {
     const resp = await fetch(this.endpoints.settings());
     const data = await resp.json() as SettingsResponse;
+    // FIXME type doesnt check properly
     return {
       selectedGallery: data.selected_gallery,
       showMode: data.show_mode,
       favoriteImagesMode: data.fav_images_mode,
-      shufflePicsWhenLoaded: data.shuffle_pics_when_loaded
+      shufflePicsWhenLoaded: data.shuffle_pics_when_loaded,
+      selectedTags: data.selected_tags
     } as PickerSettings
   }
 
@@ -70,21 +73,24 @@ class API {
       selected_gallery: settings.selectedGallery,
       show_mode: settings.showMode,
       fav_images_mode: settings.favoriteImagesMode,
-      shuffle_pics_when_loaded: settings.shufflePicsWhenLoaded
+      shuffle_pics_when_loaded: settings.shufflePicsWhenLoaded,
+      selected_tags: settings.selectedTags ? settings.selectedTags : undefined
     })
 
     return {
       selectedGallery: data.selected_gallery,
       showMode: data.show_mode,
       favoriteImagesMode: data.fav_images_mode,
-      shufflePicsWhenLoaded: data.shuffle_pics_when_loaded
+      shufflePicsWhenLoaded: data.shuffle_pics_when_loaded,
+      selectedTags: data.selected_tags
     };
   }
   /**
    * fetch images, filtered by show_mode
    */
-  async getImages(gallery: string, show_mode: GalleryShowMode): Promise<ImageInfo[]> {
-    const _url = this.endpoints.images(gallery, show_mode);
+  async getImages(gallery: string, show_mode: GalleryShowMode, filter:ImagesFilter): Promise<ImageInfo[]> {
+
+    const _url = this.endpoints.images(gallery, show_mode, filter);
     const resp = await fetch(_url);
     return await resp.json() as ImageInfo[];
 
@@ -95,7 +101,7 @@ class API {
   }
   async updateImageTags(gallery: string, imgName: string, tags: Tag[]): Promise<void> {
     return await this.doPost<void>(this.endpoints.imageTags(gallery, imgName), {
-      tags: tags.map((t) => t.name)
+      tags: tags.map((t) => t.id)
     }
     )
   }

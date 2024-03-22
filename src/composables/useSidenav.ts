@@ -1,5 +1,5 @@
-import api from "@/api";
-import type { GalleryShowMode, Gallery, PickerSettings } from "@/models";
+import api, { tagsApi } from "@/api";
+import type { GalleryShowMode, Gallery, PickerSettings, Tag } from "@/models";
 import { ref } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 import { DEFAULT_SHOW_MODE, defaultSettings } from "@/utils";
@@ -14,6 +14,11 @@ export default function useSidenav() {
   // data
   const settings = ref<PickerSettings>(defaultSettings());
   const galleries = ref<SidenavGallery[]>([]);
+
+  const tags = ref<Tag[]>()
+  const selectedTags = ref<number[]>([])
+
+  const currentTab = ref<"galleries" | "tags">("galleries")
 
   // store
   const settingsStore = useSettingsStore();
@@ -45,21 +50,41 @@ export default function useSidenav() {
   }
 
   async function fetchData() {
-    let [galls, settingsData] = await Promise.all([
-      api.getGalleries(),
-      api.getSettings(),
-    ]);
-    settings.value = settingsData;
+    settings.value = await api.getSettings()
 
-    // set show mode from settings and sort
-    const galleriesSettings = getGalleriesSettings()
+    switch (currentTab.value) {
+      case "galleries":
+        const galls = await api.getGalleries()
+        // set show mode from settings and sort
+        const galleriesSettings = getGalleriesSettings()
 
-    galleries.value = sortGalleries(
-      galls.map(
-        (g): SidenavGallery => {
-          return { ...g, showMode: galleriesSettings[g.slug]?.lastShowMode || DEFAULT_SHOW_MODE }
-        })
-    )
+        galleries.value = sortGalleries(
+          galls.map(
+            (g): SidenavGallery => {
+              return { ...g, showMode: galleriesSettings[g.slug]?.lastShowMode || DEFAULT_SHOW_MODE }
+            })
+        )
+        break;
+      case "tags":
+        tags.value = await tagsApi.list()
+        //filter tags by id
+        if (!selectedTags.value.length) {
+          const ss:number[] = []
+          for(let [idx, tag] of tags.value.entries()) {
+            
+            if (settings.value.selectedTags.includes(tag.id)) {
+              ss.push(idx)
+            }
+          }
+          selectedTags.value = ss
+        }
+        break;
+      default:
+        break;
+    }
+
+
+
 
 
     /* if selected gallery present move it on top of list
@@ -102,7 +127,7 @@ export default function useSidenav() {
     if (!settings.value.selectedGallery && !settings.value.favoriteImagesMode) {
       return;
     }
-
+    settings.value.selectedTags = selectedTags.value.map(t=>tags.value![t].id)
     await settingsStore.saveSettings(settings.value);
   }
 
@@ -114,5 +139,8 @@ export default function useSidenav() {
     fetchData,
     saveSettings,
     pinUnpinGallery,
+    tags,
+    selectedTags,
+    currentTab,
   };
 }
