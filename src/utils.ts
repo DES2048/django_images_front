@@ -39,5 +39,6 @@ export function defaultSettings(): PickerSettings {
     showMode: DEFAULT_SHOW_MODE,
     favoriteImagesMode: false,
     shufflePicsWhenLoaded: false,
+    selectedTags: []
   }
 }
