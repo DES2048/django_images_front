@@ -4,7 +4,7 @@ import { useImagesStore } from '@/stores/images';
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
-import { mdiMenu, mdiShuffleVariant, mdiDotsVertical } from '@mdi/js'
+import { mdiMenu, mdiShuffleVariant, mdiDotsVertical, mdiStar, mdiStarOutline } from '@mdi/js'
 import { useDisplay } from 'vuetify'
 
 // store
@@ -22,6 +22,7 @@ const { settings } = storeToRefs(settingsStore)
 
 // display
 const { mobile } = useDisplay()
+
 // computed
 const markToggle = computed(() => {
   if (!imagesLoaded.value) {
@@ -29,6 +30,17 @@ const markToggle = computed(() => {
   } else {
     return currentImage.value.marked
   }
+})
+
+const favIconProps = computed(()=>{
+  return currentImage?.value?.is_fav ?
+    {
+      icon: mdiStar,
+      color: "yellow"
+    }: {
+      icon: mdiStarOutline,
+      color: "white"
+    }
 })
 
 // event handlers
@@ -78,8 +90,8 @@ async function handleFavImage() {
     <a href="#" class="btn-panel" @click="prevImage" v-if="!mobile">&lt;</a>
     <a href="#" class="btn-panel" @click="nextImage" v-if="!mobile">&gt;</a>
     <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
-    <a v-if="!settings.favoriteImagesMode" href="#" class="btn-panel" @click="handleFavImage"
-      :class="{ 'toggle-btn': currentImage?.is_fav }">F</a>
+    <v-icon v-if="!settings.favoriteImagesMode" v-bind="favIconProps" 
+      @click="handleFavImage"/>
     <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
     <a href="#" class="btn-panel" :class="{ 'toggle-btn': markToggle }" @click="handleMarkUnmark">&#10004;</a>
     
@@ -99,8 +111,10 @@ async function handleFavImage() {
 <style scoped>
 /* buttons panel */
 .buttons-panel {
+  
   display: flex;
   justify-content: space-around;
+  align-items: center;
   position: fixed;
   width: 100%;
   bottom: 0;
