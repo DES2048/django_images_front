@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ButtonsPanel from "@/components/ButtonsPanel.vue";
 import ImageDrawer from "@/components/ImageDrawer.vue";
+import ImageTopPanel from "@/components/ImageTopPanel.vue"
 import Sidenav from "@/components/Sidenav2.vue";
 import SettingsDialog from "@/components/dialogs/SettingsDialog.vue";
 import RenameImageDialog from "@/components/dialogs/RenameImageDialog.vue";
@@ -134,6 +135,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
       <ImageTagsDialog v-if="uiStore.openImageTags" />
       <AddEditTagDialog v-if="uiStore._openAddEditTag" />
       <div class="error-message" v-if="error">{{ error }}</div>
+      <ImageTopPanel />
       <ImageDrawer v-if="!error && images.length" v-touch="vTouchSettings" />
       <ButtonsPanel />
     </div>

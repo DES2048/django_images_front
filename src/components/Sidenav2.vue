@@ -166,7 +166,7 @@ function handleAddGalllery() {
   max-width: 0;
   position: fixed;
   /* Stay in place */
-  z-index: 1;
+  z-index: 5;
   /* Stay on top */
   top: 0;
   /* Stay at the top */

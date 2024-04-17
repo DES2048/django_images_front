@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { readonly, ref } from "vue";
 
 export const useUiStore = defineStore("sidenav", ()=> {
     const openSidenav = ref(false)
@@ -12,13 +12,19 @@ export const useUiStore = defineStore("sidenav", ()=> {
     const addMode = ref(true)
     const editGalleryId = ref("")
     const openImageTags = ref(false)
+    const _panelsVisible = ref(true)
+    const panelsVisible = readonly(_panelsVisible)
 
     function openAddEditTag(open:boolean, isAddMode:boolean=true){
         addMode.value = isAddMode
         _openAddEditTag.value = open
     }
+    function togglePanels() {
+        _panelsVisible.value = !panelsVisible.value
+    }
     return {
         openSidenav, openSettings, openRenameImage, openCopyMoveToGallery, openGoToImage,
-        openAddEditGallery, addMode, editGalleryId, openImageTags, openAddEditTag, _openAddEditTag
+        openAddEditGallery, addMode, editGalleryId, openImageTags, openAddEditTag, _openAddEditTag,
+        togglePanels, panelsVisible
     }
 })

@@ -76,7 +76,7 @@ async function handleFavImage() {
 </script>
 
 <template>
-  <div class="buttons-panel">
+  <div class="buttons-panel" v-if="uiStore.panelsVisible">
 
     <a href="#" class="btn-panel" @click="uiStore.openSidenav = true">
       <!--<img src="{% static 'image_picker/svg/settings.svg' %}" > -->

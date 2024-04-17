@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { mdiPencil, mdiTag } from "@mdi/js";
 import { useImagesStore } from "@/stores/images";
 import { useUiStore } from "@/stores/ui";
 import { storeToRefs } from "pinia";
@@ -8,7 +7,7 @@ import { storeToRefs } from "pinia";
 // stores
 const imagesStore = useImagesStore();
 const uiStore = useUiStore()
-const {currentImageIndex, images, currentImage } = storeToRefs(imagesStore)
+const {currentImageIndex, currentImage } = storeToRefs(imagesStore)
 // data
 const imageLoading = ref(true);
 const showGoToIndex = ref(false);
@@ -35,15 +34,16 @@ function onImgLoad() {
 </script>
 
 <template>
-  <div class="imageContainer2">
-    
-    <div class="image-name">
+  <div class="imageContainer2" @click="uiStore.togglePanels">
+    <!--
+      <div class="image-name">
       <span @click="uiStore.openGoToImage = true">
         ({{ currentImageIndex + 1 }}/{{ images.length }}) {{ currentImage.name || "" }}
       </span>
       <v-icon :icon="mdiPencil" @click="uiStore.openRenameImage=true"></v-icon>
       <v-icon :icon="mdiTag" @click="uiStore.openImageTags=true" />
     </div>
+    -->
     <div v-if="imageLoading">Loading image...</div>
     <img v-show="!imageLoading" :src="currentImage.url" class="responsive2" @load="onImgLoad" ref="img"
       @error="imageLoading = false" />
