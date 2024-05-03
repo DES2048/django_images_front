@@ -1,8 +1,5 @@
-export enum GalleryShowMode {
-  All = "all",
-  Marked = "marked",
-  Unmarked = "unmarked",
-}
+import {GalleryShowMode, type PickerSettings, isPickerSettingsEqual, type GallerySettings,
+  type GalleriesLocalSettings} from './settings'
 
 export interface Gallery {
   slug: string;
@@ -29,36 +26,11 @@ export interface Tag {
   id: number
   name: string
 }
-export interface PickerSettings {
-  showMode: GalleryShowMode;
-  selectedGallery: string;
-  selectedTags: number[];
-  favoriteImagesMode: boolean;
-  shufflePicsWhenLoaded: boolean;
+
+export interface TagWithCount extends Tag {
+  images_count:number
 }
 
-export interface GallerySettings {
-  lastShowMode: GalleryShowMode
-  shufflePicsWhenLoaded: boolean
-}
-
-export interface GalleriesLocalSettings {
-  [index:string]: GallerySettings
-}
-
-export function isPickerSettingsEqual(
-  s1: PickerSettings,
-  s2?: PickerSettings
-): boolean {
-  if (!s2) {
-    return false;
-  }
-  return (
-    s1.selectedGallery == s2.selectedGallery &&
-    s1.showMode == s2.showMode &&
-    s1.favoriteImagesMode == s2.favoriteImagesMode &&
-    s1.shufflePicsWhenLoaded == s2.shufflePicsWhenLoaded &&
-    JSON.stringify(s1.selectedTags?.sort()) == JSON.stringify(s2.selectedTags?.sort()) // HACK for array
-    // comparsion
-  );
+export {
+  GalleryShowMode, GallerySettings, GalleriesLocalSettings, PickerSettings, isPickerSettingsEqual
 }

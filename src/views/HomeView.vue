@@ -16,6 +16,7 @@ import GoToImageDialog from "@/components/dialogs/GoToImageDialog.vue";
 import AddEditGalleryDialog from "@/components/dialogs/AddEditGalleryDialog.vue";
 import ImageTagsDialog from "@/components/dialogs/ImageTagsDialog.vue";
 import AddEditTagDialog from "@/components/dialogs/AddEditTagDialog.vue";
+import GalleryFilterDialog from "@/components/dialogs/GalleryFilterDialog.vue";
 
 // stores
 const imagesStore = useImagesStore()
@@ -134,6 +135,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
       <AddEditGalleryDialog v-if="uiStore.openAddEditGallery" />
       <ImageTagsDialog v-if="uiStore.openImageTags" />
       <AddEditTagDialog v-if="uiStore._openAddEditTag" />
+      <GalleryFilterDialog v-if="uiStore.openGalleryFilter" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageTopPanel />
       <ImageDrawer v-if="!error && images.length" v-touch="vTouchSettings" />

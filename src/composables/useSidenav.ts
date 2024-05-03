@@ -1,5 +1,5 @@
 import api, { tagsApi } from "@/api";
-import type { GalleryShowMode, Gallery, PickerSettings, Tag } from "@/models";
+import type { GalleryShowMode, Gallery, PickerSettings, Tag, TagWithCount } from "@/models";
 import { ref } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 import { DEFAULT_SHOW_MODE, defaultSettings } from "@/utils";
@@ -8,6 +8,7 @@ import { getGalleriesSettings } from "@/storage";
 // types
 export interface SidenavGallery extends Gallery {
   showMode: GalleryShowMode;
+  isFilter:  boolean
 }
 
 export default function useSidenav() {
@@ -15,7 +16,7 @@ export default function useSidenav() {
   const settings = ref<PickerSettings>(defaultSettings());
   const galleries = ref<SidenavGallery[]>([]);
 
-  const tags = ref<Tag[]>()
+  const tags = ref<TagWithCount[]>()
   const selectedTags = ref<number[]>([])
 
   const currentTab = ref<"galleries" | "tags">("galleries")
@@ -57,16 +58,18 @@ export default function useSidenav() {
         const galls = await api.getGalleries()
         // set show mode from settings and sort
         const galleriesSettings = getGalleriesSettings()
-
+        
         galleries.value = sortGalleries(
           galls.map(
             (g): SidenavGallery => {
-              return { ...g, showMode: galleriesSettings[g.slug]?.lastShowMode || DEFAULT_SHOW_MODE }
+              return { ...g, showMode: galleriesSettings[g.slug]?.lastShowMode || DEFAULT_SHOW_MODE,
+                isFilter: galleriesSettings[g.slug]?.filter?.tags?.length || 0 > 0 ? true: false
+               }
             })
         )
         break;
       case "tags":
-        tags.value = await tagsApi.list()
+        tags.value = await tagsApi.list("*") as TagWithCount[] 
         //filter tags by id
         if (!selectedTags.value.length) {
           const ss:number[] = []

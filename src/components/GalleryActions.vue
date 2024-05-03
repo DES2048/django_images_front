@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type Gallery, GalleryShowMode } from '@/models';
 import ToggleButton from './ToggleButton.vue';
-import { mdiDotsVertical } from '@mdi/js';
+import { mdiDotsVertical, mdiFilter, mdiPencil, mdiTrashCan } from '@mdi/js';
 import { useUiStore } from '@/stores/ui';
 import api from '@/api';
 
@@ -50,9 +50,21 @@ async function handleDeleteGallery() {
             </template>
             <v-list>
                 <v-list-item @click="handleEditGallery">
+                    <template v-slot:prepend>
+                        <v-icon :icon="mdiPencil"></v-icon>
+                    </template>
                     <v-list-item-title>Edit</v-list-item-title>
                 </v-list-item>
+                <v-list-item @click="uiStore.showGalleryFilter(gallery.slug)">
+                    <template v-slot:prepend>
+                        <v-icon :icon="mdiFilter"></v-icon>
+                    </template>
+                    <v-list-item-title>Filter</v-list-item-title>
+                </v-list-item>
                 <v-list-item @click="handleDeleteGallery">
+                    <template v-slot:prepend>
+                        <v-icon :icon="mdiTrashCan"></v-icon>
+                    </template>
                     <v-list-item-title>Delete</v-list-item-title>
                 </v-list-item>
             </v-list>

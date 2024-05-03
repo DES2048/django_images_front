@@ -14,6 +14,8 @@ export const useUiStore = defineStore("sidenav", ()=> {
     const openImageTags = ref(false)
     const _panelsVisible = ref(true)
     const panelsVisible = readonly(_panelsVisible)
+    const _openGalleryFilter =ref(false)
+    const openGalleryFilter = readonly(_openGalleryFilter)
 
     function openAddEditTag(open:boolean, isAddMode:boolean=true){
         addMode.value = isAddMode
@@ -22,9 +24,18 @@ export const useUiStore = defineStore("sidenav", ()=> {
     function togglePanels() {
         _panelsVisible.value = !panelsVisible.value
     }
+
+    function showGalleryFilter(galleryId:string) {
+        editGalleryId.value = galleryId 
+        _openGalleryFilter.value = true
+    }
+    function closeGalleryFilter() {
+        editGalleryId.value = "" 
+        _openGalleryFilter.value = false
+    }
     return {
         openSidenav, openSettings, openRenameImage, openCopyMoveToGallery, openGoToImage,
         openAddEditGallery, addMode, editGalleryId, openImageTags, openAddEditTag, _openAddEditTag,
-        togglePanels, panelsVisible
+        togglePanels, panelsVisible, openGalleryFilter, showGalleryFilter, closeGalleryFilter
     }
 })

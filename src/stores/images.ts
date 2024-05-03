@@ -4,6 +4,7 @@ import { ref, computed } from "vue";
 import api from "@/api";
 import { useSettingsStore } from "./settings";
 import { compareValues, shuffleArray } from "@/utils";
+import { getGalleriesSettings } from "@/storage";
 
 export const useImagesStore = defineStore("images", () => {
   // state
@@ -38,7 +39,8 @@ export const useImagesStore = defineStore("images", () => {
     let imagesData = set.favoriteImagesMode
       ? await api.getFavImages()
       : await api.getImages(set.selectedGallery, set.showMode, {
-        tags: settings.value.selectedTags || undefined
+        tags: getGalleriesSettings()[currentGallery.value]?.filter?.tags || settings.value.selectedTags 
+          || undefined
       });
 
     // TODO drop error
