@@ -1,4 +1,5 @@
-import { GalleryShowMode, type PickerSettings } from "./models";
+import type { GallerySettings, PickerSettings } from "./models";
+import {GalleryShowMode} from "./models";
 
 export const DEFAULT_SHOW_MODE = GalleryShowMode.Unmarked;
 
@@ -40,5 +41,12 @@ export function defaultSettings(): PickerSettings {
     favoriteImagesMode: false,
     shufflePicsWhenLoaded: false,
     selectedTags: []
+  }
+}
+
+export function defaultGallerySettings(): GallerySettings {
+  return {
+    lastShowMode: DEFAULT_SHOW_MODE,
+    shufflePicsWhenLoaded: false
   }
 }

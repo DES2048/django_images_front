@@ -1,5 +1,5 @@
 import type { GalleriesLocalSettings, GallerySettings } from "./models"
-import { DEFAULT_SHOW_MODE } from "./utils"
+import { defaultGallerySettings } from "./utils"
 
 export function getObjectFromStorage<T>(key:string, defaultValue?:T): T|undefined {
     const str = localStorage.getItem(key)
@@ -18,11 +18,23 @@ export function saveGallerySettings(galleryId:string, settings: Partial<GalleryS
     let locSettings = getGalleriesSettings()
     
     locSettings[galleryId] = locSettings[galleryId] ? {...locSettings[galleryId], ...settings}
-        : {lastShowMode: DEFAULT_SHOW_MODE, shufflePicsWhenLoaded: false, ...settings}
+        : {...defaultGallerySettings(), ...settings}
 
     setObjectToStorage("galleries-settings", locSettings)
 }
 
 export function getGalleriesSettings(): GalleriesLocalSettings {
-    return getObjectFromStorage<GalleriesLocalSettings>("galleries-settings", {})!
+    const settings = getObjectFromStorage<GalleriesLocalSettings>("galleries-settings", undefined)
+    
+    if(settings) {
+        for(let key of Object.keys(settings)) {
+            settings[key] = {
+                ...defaultGallerySettings(),
+                ...settings[key]
+            }
+        }
+        return settings
+    }
+    
+    return {}
 }
