@@ -1,4 +1,4 @@
-import type { Tag, TagWithCount } from "@/models"
+import { GalleryShowMode, type Tag, type TagWithCount } from "@/models"
 import endpoints, { type APIEndpoints } from "./endpoints"
 import type { AddTagPayload } from "./payloads"
 import HttpHelper from "./helper"
@@ -8,10 +8,12 @@ export class TagsApi {
         this.endpoints = endpoints
     }
 
-    async list(count_for:string=""):Promise<Tag[]|TagWithCount[]> {
+    async list(count_for_gallery:string="", count_for_show_mode:GalleryShowMode=GalleryShowMode.All)
+        :Promise<Tag[]|TagWithCount[]> {
         const endpoint = this.endpoints.tags()
-        if (count_for.length >0) {
-            endpoint.searchParams.set("count-for", count_for)
+        if (count_for_gallery.length >0) {
+            endpoint.searchParams.set("count-for-gallery", count_for_gallery)
+            endpoint.searchParams.set("count-for-show-mode", count_for_show_mode)
         }
         
         const resp = await fetch(endpoint)

@@ -17,10 +17,11 @@ import AddEditGalleryDialog from "@/components/dialogs/AddEditGalleryDialog.vue"
 import ImageTagsDialog from "@/components/dialogs/ImageTagsDialog.vue";
 import AddEditTagDialog from "@/components/dialogs/AddEditTagDialog.vue";
 import GalleryFilterDialog from "@/components/dialogs/GalleryFilterDialog.vue";
+import { getGalleriesSettings } from "@/storage";
 
 // stores
 const imagesStore = useImagesStore()
-const { images, randomMode } = storeToRefs(imagesStore);
+const { images, randomMode, imagesFilter } = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
 const uiStore = useUiStore()
@@ -41,6 +42,7 @@ function shouldReloadImages(s1:PickerSettings, s2:PickerSettings) {
     JSON.stringify(s1.selectedTags?.sort()) !== JSON.stringify(s2.selectedTags?.sort())
   );
 }
+
 // watch settings changed
 watch(settings, async (newSettings, oldSettings) => {
   if (!shouldReloadImages(newSettings, oldSettings)) {
@@ -48,6 +50,13 @@ watch(settings, async (newSettings, oldSettings) => {
   }
 
   error.value = "";
+  // set images filter
+  if (settings.value.selectedGallery) {
+    const selTags = getGalleriesSettings()[settings.value.selectedGallery]?.filter?.tags
+    if (selTags) {
+      imagesFilter.value.selectedTags = selTags
+    }
+  }
 
   try {
     // loading images
@@ -58,10 +67,22 @@ watch(settings, async (newSettings, oldSettings) => {
 
 })
 
+// watch images filter changed changed
+watch(imagesFilter, async (newVal, oldVal) => {
+  
+  error.value = "";
+
+  try {
+    // loading images
+    await imagesStore.fetchImages();
+  } catch (err) {
+    error.value = (err as Error).message
+  }
+
+}, {deep: true})
+
 
 async function reload() {
-
-  imagesStore.resetImages()
 
   try {
     // fetching settings

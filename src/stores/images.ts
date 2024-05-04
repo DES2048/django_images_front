@@ -6,12 +6,17 @@ import { useSettingsStore } from "./settings";
 import { compareValues, shuffleArray } from "@/utils";
 import { getGalleriesSettings } from "@/storage";
 
+export interface ImagesFilter {
+  selectedTags?: number[]
+}
+
 export const useImagesStore = defineStore("images", () => {
   // state
   const images = ref<ImageInfo[] | FavImageInfo[]>([]);
   const currentImageIndex = ref(-1);
   const randomMode = ref(false);
   const imagesLoaded = ref(false);
+  const imagesFilter = ref<ImagesFilter>({})
 
   // imported stores
   const settingsStore = useSettingsStore();
@@ -32,14 +37,18 @@ export const useImagesStore = defineStore("images", () => {
     images.value = [];
     currentImageIndex.value = -1;
     randomMode.value = false;
+    imagesLoaded.value = false;
   }
 
   async function fetchImages() {
+    
+    resetImages()
+
     const set = settings.value;
     let imagesData = set.favoriteImagesMode
       ? await api.getFavImages()
       : await api.getImages(set.selectedGallery, set.showMode, {
-        tags: getGalleriesSettings()[currentGallery.value]?.filter?.tags || settings.value.selectedTags 
+        tags: imagesFilter.value.selectedTags || settings.value.selectedTags 
           || undefined
       });
 
@@ -273,6 +282,7 @@ export const useImagesStore = defineStore("images", () => {
     images,
     currentImageIndex,
     imagesLoaded,
+    imagesFilter,
     currentImage,
     currentGallery,
     randomMode,
