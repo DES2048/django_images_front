@@ -52,10 +52,6 @@ export const useImagesStore = defineStore("images", () => {
           || undefined
       });
 
-    // TODO drop error
-    if (imagesData.length == 0) {
-      throw new Error("selected gallery did't return any image");
-    }
 
     if (settings.value.shufflePicsWhenLoaded) {
       imagesData = shuffleArray(imagesData)

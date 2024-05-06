@@ -28,7 +28,7 @@ const markToggle = computed(() => {
   if (!imagesLoaded.value) {
     return false;
   } else {
-    return currentImage.value.marked
+    return currentImage.value?.marked
   }
 })
 

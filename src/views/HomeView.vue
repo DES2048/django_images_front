@@ -21,7 +21,7 @@ import { getGalleriesSettings } from "@/storage";
 
 // stores
 const imagesStore = useImagesStore()
-const { images, randomMode, imagesFilter } = storeToRefs(imagesStore);
+const { images, randomMode, imagesFilter, imagesLoaded } = storeToRefs(imagesStore);
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
 const uiStore = useUiStore()
@@ -67,8 +67,8 @@ watch(settings, async (newSettings, oldSettings) => {
 
 })
 
-// watch images filter changed changed
-watch(imagesFilter, async (newVal, oldVal) => {
+// watch images filter changed
+watch(imagesFilter, async () => {
   
   error.value = "";
 
@@ -81,6 +81,12 @@ watch(imagesFilter, async (newVal, oldVal) => {
 
 }, {deep: true})
 
+// watch gallery emptiness
+watch(()=>images.value.length ===0 && imagesLoaded.value, (val)=> {
+  if(val) {
+    error.value = "No images found in gallery or with current filter"
+  }
+})
 
 async function reload() {
 
