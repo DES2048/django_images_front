@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { type Gallery, GalleryShowMode } from '@/models';
+/* __placeholder__ */
+import type { Gallery, GalleryShowMode } from '@/models';
 import ToggleButton from './ToggleButton.vue';
+import ShowModeSwitcher from './ShowModeSwitcher.vue'
 import { mdiDotsVertical, mdiFilter, mdiPencil, mdiTrashCan } from '@mdi/js';
 import { useUiStore } from '@/stores/ui';
 import api from '@/api';
@@ -38,12 +40,7 @@ async function handleDeleteGallery() {
     <span class="actions">
         <ToggleButton :value="gallery.pinned" :toggled-value="true"
             @on-toggle="emit('pinUnpinClick', gallery.slug, !props.gallery.pinned)">&#128204;</ToggleButton>
-        <ToggleButton :value="showMode" :toggled-value="GalleryShowMode.Marked"
-            @on-toggle="emit('showModeClick', gallery.slug, GalleryShowMode.Marked)">M</ToggleButton>
-        <ToggleButton :value="showMode" :toggled-value="GalleryShowMode.Unmarked"
-            @on-toggle="emit('showModeClick', gallery.slug, GalleryShowMode.Unmarked)"><s>M</s></ToggleButton>
-        <ToggleButton :value="showMode" :toggled-value="GalleryShowMode.All"
-            @on-toggle="emit('showModeClick', gallery.slug, GalleryShowMode.All)">*.*</ToggleButton>
+        <ShowModeSwitcher :showMode="showMode" @show-mode-click="(showMode)=>emit('showModeClick', gallery.slug, showMode)"/>
         <v-menu location="right">
             <template v-slot:activator="{ props }">
                 <v-icon :icon="mdiDotsVertical" v-bind="props" size="small" class="menu-icon"></v-icon>
