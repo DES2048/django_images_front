@@ -1,5 +1,5 @@
 import api, { tagsApi } from "@/api";
-import type { GalleryShowMode, Gallery, PickerSettings, Tag, TagWithCount } from "@/models";
+import type { GalleryShowMode, Gallery, PickerSettings, TagWithCount } from "@/models";
 import { ref } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 import { DEFAULT_SHOW_MODE, defaultSettings } from "@/utils";
@@ -11,10 +11,16 @@ export interface SidenavGallery extends Gallery {
   isFilter:  boolean
 }
 
+export interface FavGallery  {
+  showMode: GalleryShowMode;
+  isFilter:  boolean
+}
+
 export default function useSidenav() {
   // data
   const settings = ref<PickerSettings>(defaultSettings());
   const galleries = ref<SidenavGallery[]>([]);
+  const favGallery = ref<FavGallery>({showMode: DEFAULT_SHOW_MODE, isFilter:false})
 
   const tags = ref<TagWithCount[]>()
   const selectedTags = ref<number[]>([])
@@ -26,6 +32,7 @@ export default function useSidenav() {
   //const {settings} = storeToRefs(settingsStore)
 
   // methods
+
   function sortGalleries(galleries: SidenavGallery[]): SidenavGallery[] {
     const outGalleries: SidenavGallery[] = [];
     // move selected on top if any
@@ -110,14 +117,25 @@ export default function useSidenav() {
     )!.showMode;
   }
 
+  // selects certain gallery show mode
   function selectGalleryShowMode(
     gallery_id: string,
     showMode: GalleryShowMode
   ) {
     galleries.value.find((g) => g.slug === gallery_id)!.showMode = showMode;
 
-    settings.value.selectedGallery = gallery_id;
-    settings.value.showMode = showMode;
+    // TODO why??
+    //settings.value.selectedGallery = gallery_id;
+    //settings.value.showMode = showMode;
+  }
+
+  function selectFavShowMode(showMode: GalleryShowMode) {
+    favGallery.value.showMode = showMode
+  }
+
+  function selectFav() {
+    settings.value.favoriteImagesMode = true;
+    settings.value.showMode = favGallery.value.showMode
   }
 
   async function pinUnpinGallery(gallery_id: string, pin: boolean) {
@@ -127,8 +145,16 @@ export default function useSidenav() {
   }
 
   async function saveSettings() {
-    if (!settings.value.selectedGallery && !settings.value.favoriteImagesMode) {
-      return;
+    
+    if(settings.value.selectedGallery) {
+      // fill show mode from selected gallery
+      settings.value.showMode = galleries.value.find(
+        (g) => g.slug === settings.value.selectedGallery
+      )!.showMode;
+    } else if (settings.value.favoriteImagesMode) {
+      settings.value.showMode = favGallery.value.showMode
+    } else {
+      return 
     }
     settings.value.selectedTags = selectedTags.value.map(t=>tags.value![t].id)
     await settingsStore.saveSettings(settings.value);
@@ -137,8 +163,11 @@ export default function useSidenav() {
   return {
     settings,
     galleries,
+    favGallery,
     selectGallery,
     selectGalleryShowMode,
+    selectFavShowMode,
+    selectFav,
     fetchData,
     saveSettings,
     pinUnpinGallery,

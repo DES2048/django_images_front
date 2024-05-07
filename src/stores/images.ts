@@ -4,7 +4,6 @@ import { ref, computed } from "vue";
 import api from "@/api";
 import { useSettingsStore } from "./settings";
 import { compareValues, shuffleArray } from "@/utils";
-import { getGalleriesSettings } from "@/storage";
 
 export interface ImagesFilter {
   selectedTags?: number[]
@@ -46,7 +45,7 @@ export const useImagesStore = defineStore("images", () => {
 
     const set = settings.value;
     let imagesData = set.favoriteImagesMode
-      ? await api.getFavImages()
+      ? await api.getFavImages({showMode: set.showMode})
       : await api.getImages(set.selectedGallery, set.showMode, {
         tags: imagesFilter.value.selectedTags || settings.value.selectedTags 
           || undefined

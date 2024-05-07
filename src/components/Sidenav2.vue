@@ -12,6 +12,7 @@ import { useUiStore } from "@/stores/ui";
 import { mdiCog, mdiPlusCircleOutline, mdiPlusCircle, mdiFilter } from '@mdi/js'
 import { tagsApi } from "@/api";
 import type { TagWithCount } from "@/models";
+import ShowModeSwitcher from "./ShowModeSwitcher.vue";
 
 // props
 const props = defineProps<{
@@ -27,10 +28,13 @@ const {
   galleries,
   tags,
   selectedTags,
+  favGallery,
   fetchData,
   saveSettings,
   selectGallery,
   selectGalleryShowMode,
+  selectFav,
+  selectFavShowMode,
   pinUnpinGallery,
   currentTab
 } = useSidenav();
@@ -130,7 +134,10 @@ function handleAddGalllery() {
           <v-window-item value="galleries">
             <!-- FAV-->
             <a href="#" :class="{ selected: settings.favoriteImagesMode }"
-              @click="settings.favoriteImagesMode = true">Fav</a>
+              @click="selectFav">
+              <span>Fav</span>
+              <ShowModeSwitcher :show-mode="favGallery.showMode" @show-mode-click="selectFavShowMode"/>
+            </a>
             <a v-for="gallery in galleries" :key="gallery.slug" :class="{
               selected: !settings.favoriteImagesMode &&
                         gallery.slug === settings.selectedGallery,
