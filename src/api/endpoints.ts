@@ -16,7 +16,7 @@ export interface APIEndpoints {
     unmarkImage(gallery:string, imgName:string): URL
     renameImage(gallery:string): URL
     copyMoveImage(srcGallery:string): URL
-    favImage(): URL
+    favImage(imagesFilter?:ImagesFilter): URL
     tags(): URL
 }
 
@@ -56,8 +56,14 @@ const endpoints:APIEndpoints = {
     imageTags(gallery:string, imgName:string) {
       return new URL(`/galleries/${gallery}/images/${imgName}/tags`, API_BASE_URL);
     },
-    favImage() {
-      return new URL(`/fav-images/`, API_BASE_URL)
+    favImage(imagesFilter?:ImagesFilter) {
+      const url = new URL(`/fav-images/`, API_BASE_URL)
+      const showMode = imagesFilter?.showMode
+      if (showMode) {
+        url.searchParams.append("show_mode", showMode)
+      }
+      
+      return url
     },
     tags() {
         return new URL(`/tags/`, API_BASE_URL)

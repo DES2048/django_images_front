@@ -140,8 +140,8 @@ class API {
       gallery, name: imgName
     })
   }
-  async getFavImages(): Promise<FavImageInfo[]> {
-    const url = this.endpoints.favImage()
+  async getFavImages(imagesFilter?:ImagesFilter): Promise<FavImageInfo[]> {
+    const url = this.endpoints.favImage(imagesFilter)
     const resp = await fetch(url);
     return await resp.json() as FavImageInfo[];
   }

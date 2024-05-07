@@ -1,3 +1,4 @@
+import type { GalleryShowMode } from "@/models"
 
 export interface AddGalleryPayload {
     title: string
@@ -8,6 +9,7 @@ export interface AddGalleryPayload {
 
 export interface ImagesFilter {
     tags?: number[]
+    showMode?: GalleryShowMode
 }
 
 export type UpdateGalleryPayload = Partial<Omit<AddGalleryPayload, "slug">>
