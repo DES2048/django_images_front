@@ -73,6 +73,16 @@ async function handleFavImage() {
     await addCurrentImageToFav()
   }
 }
+
+function handleOpenCopyToGallery() {
+  uiStore.moveToGalleryMode = false
+  uiStore.openCopyMoveToGallery = true
+}
+
+function handleOpenMoveToGallery() {
+  uiStore.moveToGalleryMode = true
+  uiStore.openCopyMoveToGallery = true
+}
 </script>
 
 <template>
@@ -100,8 +110,11 @@ async function handleFavImage() {
         <v-icon :icon="mdiDotsVertical" v-bind="props"></v-icon>
       </template>
       <v-list>
-        <v-list-item @click="uiStore.openCopyMoveToGallery=true">
-          <v-list-item-title>Copy/Move</v-list-item-title>
+        <v-list-item @click="handleOpenCopyToGallery">
+          <v-list-item-title>Copy</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="handleOpenMoveToGallery">
+          <v-list-item-title>Move</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>

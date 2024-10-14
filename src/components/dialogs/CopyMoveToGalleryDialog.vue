@@ -13,7 +13,6 @@ const imagesStore = useImagesStore()
 const settingsStore = useSettingsStore()
 
 // data
-const move = ref(false)
 const selected = ref<string[]>([])
 const galleries = ref<Gallery[]>([])
 const errors = ref<string[]>([])
@@ -30,7 +29,7 @@ watch(() => uiStore.openCopyMoveToGallery, async (open: boolean) => {
     } else {
         galleries.value = []
         selected.value = []
-        move.value = false
+        uiStore.moveToGalleryMode = false
     }
 }, { immediate: true })
 
@@ -47,9 +46,9 @@ async function handle() {
             imagesStore.currentGallery,
             selected.value[0],
             imagesStore.currentImage.name,
-            move.value
+            uiStore.moveToGalleryMode
         )
-        if (!settingsStore.settings.favoriteImagesMode && move.value) {
+        if (!settingsStore.settings.favoriteImagesMode && uiStore.moveToGalleryMode) {
             imagesStore.images.splice(imagesStore.currentImageIndex, 1)
         }
         uiStore.openCopyMoveToGallery = false
@@ -72,7 +71,7 @@ async function handle() {
         <template v-slot:default="{ isActive }">
             <v-card title="Copy/Move To:">
                 <v-card-subtitle>
-                    <v-checkbox label="Move" v-model="move" density="compact" :error-messages="errors"/>
+                    <v-checkbox label="Move" v-model="uiStore.moveToGalleryMode" density="compact" :error-messages="errors"/>
                 </v-card-subtitle>
                 <v-divider />
                 <v-card-text>
