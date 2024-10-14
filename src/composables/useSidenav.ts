@@ -59,6 +59,8 @@ export default function useSidenav() {
 
   async function fetchData() {
     settings.value = await api.getSettings()
+    
+    favGallery.value.showMode = settings.value.showMode
 
     switch (currentTab.value) {
       case "galleries":
@@ -136,6 +138,7 @@ export default function useSidenav() {
   function selectFav() {
     settings.value.favoriteImagesMode = true;
     settings.value.showMode = favGallery.value.showMode
+    settings.value.selectedGallery = ""
   }
 
   async function pinUnpinGallery(gallery_id: string, pin: boolean) {
