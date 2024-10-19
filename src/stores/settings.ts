@@ -24,7 +24,7 @@ export const useSettingsStore = defineStore("settings", () => {
       data = await api.getSettings();
     }
 
-    if (!data.selectedGallery && !data.favoriteImagesMode) {
+    if (!data.selectedGallery && !data.favoriteImagesMode && data.selectedTags.length === 0) {
       throw new Error("Pick gallery in sidenav")
     }
 

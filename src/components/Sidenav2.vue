@@ -11,7 +11,7 @@ import useSidenav from "@/composables/useSidenav";
 import { useUiStore } from "@/stores/ui";
 import { mdiCog, mdiPlusCircleOutline, mdiPlusCircle, mdiFilter } from '@mdi/js'
 import { tagsApi } from "@/api";
-import type { TagWithCount } from "@/models";
+import { GalleryShowMode, type TagWithCount } from "@/models";
 import ShowModeSwitcher from "./ShowModeSwitcher.vue";
 
 // props
@@ -36,8 +36,11 @@ const {
   selectFav,
   selectFavShowMode,
   pinUnpinGallery,
-  currentTab
+  currentTab,
+  filterShowMode,
 } = useSidenav();
+
+//const filterShowMode = ref(DEFAULT_SHOW_MODE)
 
 const uiStore = useUiStore()
 
@@ -79,8 +82,8 @@ watch(
 watch(currentTab, async () => {
   if (currentTab.value === "galleries") {
     galleries.value.length > 0 || await fetchData()
-  } else if (currentTab.value === "tags") {
-    tags.value || (tags.value = await tagsApi.list("*") as TagWithCount[])
+  } else if (currentTab.value === "filter") {
+    tags.value || (tags.value = await tagsApi.list("*", settings.value.showMode) as TagWithCount[])
     if (!selectedTags.value.length) {
       const ss: number[] = []
       for (let [idx, tag] of tags.value.entries()) {
@@ -125,38 +128,56 @@ function handleAddGalllery() {
           <v-tab value="galleries">
             Galleries
           </v-tab>
-          <v-tab value="tags">
+          <v-tab value="filter">
             <v-icon :icon="mdiFilter" color="red" v-if="settings.selectedTags?.length" />
-            Tags
+            Filter
           </v-tab>
         </v-tabs>
         <v-window v-model="currentTab">
           <v-window-item value="galleries">
             <!-- FAV-->
-            <a href="#" :class="{ selected: settings.favoriteImagesMode }"
-              @click="selectFav">
+            <a href="#" :class="{ selected: settings.favoriteImagesMode }" @click="selectFav">
               <span>Fav</span>
-              <ShowModeSwitcher :show-mode="favGallery.showMode" @show-mode-click="selectFavShowMode"/>
+              <ShowModeSwitcher :show-mode="favGallery.showMode" @show-mode-click="selectFavShowMode" />
             </a>
             <a v-for="gallery in galleries" :key="gallery.slug" :class="{
               selected: !settings.favoriteImagesMode &&
-                        gallery.slug === settings.selectedGallery,
+                gallery.slug === settings.selectedGallery,
             }">
               <span @click="selectGallery(gallery.slug)" class="gallery-title">
-              {{ gallery.title }}<sup v-if="gallery.isFilter">
-                  <v-icon :icon="mdiFilter" color="red" size="small" @click="uiStore.showGalleryFilter(gallery.slug)"/>
+                {{ gallery.title }}<sup v-if="gallery.isFilter">
+                  <v-icon :icon="mdiFilter" color="red" size="small" @click="uiStore.showGalleryFilter(gallery.slug)" />
                 </sup></span>
               <GalleryActions :show-mode="gallery.showMode" :gallery="gallery" @show-mode-click="selectGalleryShowMode"
                 @pin-unpin-click="pinUnpinGallery" />
             </a>
           </v-window-item>
-          <v-window-item value="tags">
+          <v-window-item value="filter">
+            <v-container>
+              <v-row>
+                <v-col>Show Mode:</v-col>
+                <v-col>
+                  <v-btn-toggle v-model="filterShowMode" mandatory divided shaped density="compact" size="small"
+                    selected-class="filter-show-mode-selected">
+                    <v-btn :value="GalleryShowMode.Marked">M</v-btn>
+                    <v-btn :value="GalleryShowMode.Unmarked"><s>M</s></v-btn>
+                    <v-btn :value="GalleryShowMode.All">*.*</v-btn>
+                  </v-btn-toggle>
+                </v-col>
+              </v-row>
+              <v-divider />
+                <h3>Tags</h3>
+              <v-divider></v-divider>
+              <v-row>
+                <v-col><v-btn @click="selectedTags = []">Reset</v-btn></v-col>
+              </v-row>
             <v-chip-group v-model="selectedTags" selected-class="text-primary" column multiple>
               <v-icon :icon="mdiPlusCircle" @click="uiStore.openAddEditTag(true)" />
               <v-chip v-for="tag in tags" :key="tag.id" variant="outlined" filter>
                 {{ tag.images_count }} {{ tag.name }}
               </v-chip>
             </v-chip-group>
+            </v-container>
           </v-window-item>
         </v-window>
       </div>
@@ -267,5 +288,9 @@ function handleAddGalllery() {
 
 .galleries-container a.selected {
   border: 1px solid #f1f1f1;
+}
+
+.filter-show-mode-selected {
+  border: 1px solid red;
 }
 </style>

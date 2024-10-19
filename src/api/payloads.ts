@@ -10,6 +10,7 @@ export interface AddGalleryPayload {
 export interface ImagesFilter {
     tags?: number[]
     showMode?: GalleryShowMode
+    gallery?: string
 }
 
 export type UpdateGalleryPayload = Partial<Omit<AddGalleryPayload, "slug">>

@@ -95,6 +95,12 @@ class API {
     return await resp.json() as ImageInfo[];
 
   }
+  async filterImages(filter:ImagesFilter):Promise<ImageInfo[]> {
+    return await this.doPost<ImageInfo[]>(this.endpoints.filterImages(filter), {
+      tags: filter.tags,
+      show_mode: filter.showMode
+    })
+  }
   async getImageTags(gallery: string, imgName: string): Promise<Tag[]> {
     const resp = await fetch(this.endpoints.imageTags(gallery, imgName))
     return await resp.json() as Tag[]

@@ -10,6 +10,7 @@ export interface APIEndpoints {
     gallery(gallery:string): URL
     pinUnpinGallery(gallery:string, pin:boolean): URL
     images(gallery:string, show_mode:GalleryShowMode, filter:ImagesFilter): URL
+    filterImages(filter:ImagesFilter): URL
     imageTags(gallery:string, imgName:string): URL
     deleteImage(gallery:string, imgName:string): URL
     markImage(gallery:string, imgName:string): URL
@@ -37,6 +38,9 @@ const endpoints:APIEndpoints = {
        
       }
       return url
+    },
+    filterImages(filter:ImagesFilter) {
+        return new URL(`/filter-images/`, API_BASE_URL)
     },
     deleteImage(gallery:string, imgName:string) {
       return new URL(`/delete-image/${gallery}/${imgName}`, API_BASE_URL);  

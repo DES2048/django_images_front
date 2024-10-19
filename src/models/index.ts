@@ -15,6 +15,7 @@ export interface ImageInfo {
   marked: boolean;
   mod_time: number;
   is_fav: boolean;
+  gallery?: string
 }
 
 export interface FavImageInfo extends ImageInfo {

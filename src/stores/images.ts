@@ -27,6 +27,7 @@ export const useImagesStore = defineStore("images", () => {
   });
 
   const currentGallery = computed(()=>{
+    return currentImage.value.gallery || settings.value.selectedGallery
     return settings.value.favoriteImagesMode ? (currentImage.value as FavImageInfo).gallery
       : settings.value.selectedGallery
   })
@@ -44,13 +45,20 @@ export const useImagesStore = defineStore("images", () => {
     resetImages()
 
     const set = settings.value;
-    let imagesData = set.favoriteImagesMode
-      ? await api.getFavImages({showMode: set.showMode})
-      : await api.getImages(set.selectedGallery, set.showMode, {
+    let imagesData
+    if(set.favoriteImagesMode) {
+      imagesData =  await api.getFavImages({showMode: set.showMode})
+    } else if(set.selectedGallery) {
+      imagesData =  await api.getImages(set.selectedGallery, set.showMode, {
         tags: imagesFilter.value.selectedTags || settings.value.selectedTags 
           || undefined
       });
-
+    } else {
+      imagesData = await api.filterImages({
+        showMode: settings.value.showMode,
+        tags: settings.value.selectedTags
+      })
+    }
 
     if (settings.value.shufflePicsWhenLoaded) {
       imagesData = shuffleArray(imagesData)

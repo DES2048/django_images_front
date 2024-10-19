@@ -1,6 +1,6 @@
 import api, { tagsApi } from "@/api";
 import type { GalleryShowMode, Gallery, PickerSettings, TagWithCount } from "@/models";
-import { ref } from "vue";
+import { ref, watch, computed } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 import { DEFAULT_SHOW_MODE, defaultSettings } from "@/utils";
 import { getGalleriesSettings } from "@/storage";
@@ -24,13 +24,38 @@ export default function useSidenav() {
 
   const tags = ref<TagWithCount[]>()
   const selectedTags = ref<number[]>([])
+  const multiSelectTags = ref(false)
 
-  const currentTab = ref<"galleries" | "tags">("galleries")
+  const currentTab = ref<"galleries" | "filter">("galleries")
+  const filterShowMode = ref<GalleryShowMode>(DEFAULT_SHOW_MODE)
 
   // store
   const settingsStore = useSettingsStore();
   //const {settings} = storeToRefs(settingsStore)
 
+  // watchers
+  watch(()=>selectedTags.value.length>0, ()=>{
+    settings.value.selectedGallery = ""
+    settings.value.showMode = DEFAULT_SHOW_MODE
+    settings.value.favoriteImagesMode = false
+  })
+
+  watch(filterShowMode, async ()=> {
+    tags.value = await tagsApi.list("*", filterShowMode.value) as TagWithCount[] 
+  })
+
+  watch(multiSelectTags, ()=> {
+    if (!multiSelectTags) {
+      if(selectedTags.value.length >1) {
+        selectedTags.value.length = 1
+      }
+    }
+  })
+
+  // computed
+  const multiSelectTagsLabel = computed(()=>{
+    return multiSelectTags.value ? "Many": "One"
+  })
   // methods
 
   function sortGalleries(galleries: SidenavGallery[]): SidenavGallery[] {
@@ -61,6 +86,7 @@ export default function useSidenav() {
     settings.value = await api.getSettings()
     
     favGallery.value.showMode = settings.value.showMode
+    filterShowMode.value = settings.value.showMode
 
     switch (currentTab.value) {
       case "galleries":
@@ -77,8 +103,8 @@ export default function useSidenav() {
             })
         )
         break;
-      case "tags":
-        tags.value = await tagsApi.list("*") as TagWithCount[] 
+      case "filter":
+        tags.value = await tagsApi.list("*", settings.value.showMode) as TagWithCount[] 
         //filter tags by id
         if (!selectedTags.value.length) {
           const ss:number[] = []
@@ -117,6 +143,8 @@ export default function useSidenav() {
     settings.value.showMode = galleries.value.find(
       (g) => g.slug === gallery_id
     )!.showMode;
+    // disable selected tags
+    selectedTags.value = []
   }
 
   // selects certain gallery show mode
@@ -139,6 +167,7 @@ export default function useSidenav() {
     settings.value.favoriteImagesMode = true;
     settings.value.showMode = favGallery.value.showMode
     settings.value.selectedGallery = ""
+    selectedTags.value = []
   }
 
   async function pinUnpinGallery(gallery_id: string, pin: boolean) {
@@ -157,7 +186,7 @@ export default function useSidenav() {
     } else if (settings.value.favoriteImagesMode) {
       settings.value.showMode = favGallery.value.showMode
     } else {
-      return 
+      settings.value.showMode = filterShowMode.value
     }
     settings.value.selectedTags = selectedTags.value.map(t=>tags.value![t].id)
     await settingsStore.saveSettings(settings.value);
@@ -177,5 +206,8 @@ export default function useSidenav() {
     tags,
     selectedTags,
     currentTab,
+    filterShowMode,
+    multiSelectTags,
+    multiSelectTagsLabel,
   };
 }
