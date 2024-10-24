@@ -1,18 +1,18 @@
 import api, { tagsApi } from "@/api";
 import type { GalleryShowMode, Gallery, PickerSettings, TagWithCount } from "@/models";
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, readonly } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 import { DEFAULT_SHOW_MODE, defaultSettings } from "@/utils";
 import { getGalleriesSettings } from "@/storage";
 
 // types
 export interface SidenavGallery extends Gallery {
-  showMode: GalleryShowMode;
+  showMode: GalleryShowMode; // show mode for every gallery
   isFilter:  boolean
 }
 
 export interface FavGallery  {
-  showMode: GalleryShowMode;
+  showMode: GalleryShowMode; // show mode for gallery
   isFilter:  boolean
 }
 
@@ -34,14 +34,36 @@ export default function useSidenav() {
   //const {settings} = storeToRefs(settingsStore)
 
   // watchers
+  // when selects at least one tag, reset seelected gallery of fav and enters to filter mode
   watch(()=>selectedTags.value.length>0, ()=>{
     settings.value.selectedGallery = ""
     settings.value.showMode = DEFAULT_SHOW_MODE
     settings.value.favoriteImagesMode = false
   })
 
+  // refresh images count for every tag for selected show mode
   watch(filterShowMode, async ()=> {
     tags.value = await tagsApi.list("*", filterShowMode.value) as TagWithCount[] 
+  })
+
+  // watch open sidenav
+  watch(currentTab, async () => {
+    if (currentTab.value === "galleries") {
+      galleries.value.length > 0 || await fetchData()
+    } else if (currentTab.value === "filter") {
+      tags.value || (tags.value = await tagsApi.list("*", settings.value.showMode) as TagWithCount[])
+      if (!selectedTags.value.length) {
+        const ss: number[] = []
+        for (let [idx, tag] of tags.value.entries()) {
+  
+          if (settings.value.selectedTags.includes(tag.id)) {
+            ss.push(idx)
+          }
+        }
+        selectedTags.value = ss
+      }
+  
+    }
   })
 
   watch(multiSelectTags, ()=> {
@@ -56,6 +78,7 @@ export default function useSidenav() {
   const multiSelectTagsLabel = computed(()=>{
     return multiSelectTags.value ? "Many": "One"
   })
+
   // methods
 
   function sortGalleries(galleries: SidenavGallery[]): SidenavGallery[] {
@@ -69,6 +92,7 @@ export default function useSidenav() {
         outGalleries[0] = galleries.splice(idx, 1)[0];
       }
     }
+    // TODO sort by pinned date
     // move pinned next if any
     const pinned = galleries.filter((g) => g.pinned);
     if (pinned.length > 0) {
@@ -82,6 +106,35 @@ export default function useSidenav() {
     return outGalleries;
   }
 
+  async function fetchGalleries() {
+    const galls = await api.getGalleries()
+    // set show mode from settings and sort
+    const galleriesSettings = getGalleriesSettings()
+    
+    galleries.value = sortGalleries(
+      galls.map(
+        (g): SidenavGallery => {
+          return { ...g, showMode: galleriesSettings[g.slug]?.lastShowMode || DEFAULT_SHOW_MODE,
+            isFilter: galleriesSettings[g.slug]?.filter?.tags?.length || 0 > 0 ? true: false
+           }
+        })
+    )
+  }
+
+  async function fetchTags() {
+    tags.value = await tagsApi.list("*", settings.value.showMode) as TagWithCount[] 
+    //filter tags by id
+    if (!selectedTags.value.length) {
+      const ss:number[] = []
+      for(let [idx, tag] of tags.value.entries()) {
+        
+        if (settings.value.selectedTags.includes(tag.id)) {
+          ss.push(idx)
+        }
+      }
+      selectedTags.value = ss
+    }
+  }
   async function fetchData() {
     settings.value = await api.getSettings()
     
@@ -90,40 +143,14 @@ export default function useSidenav() {
 
     switch (currentTab.value) {
       case "galleries":
-        const galls = await api.getGalleries()
-        // set show mode from settings and sort
-        const galleriesSettings = getGalleriesSettings()
-        
-        galleries.value = sortGalleries(
-          galls.map(
-            (g): SidenavGallery => {
-              return { ...g, showMode: galleriesSettings[g.slug]?.lastShowMode || DEFAULT_SHOW_MODE,
-                isFilter: galleriesSettings[g.slug]?.filter?.tags?.length || 0 > 0 ? true: false
-               }
-            })
-        )
+        await fetchGalleries()
         break;
       case "filter":
-        tags.value = await tagsApi.list("*", settings.value.showMode) as TagWithCount[] 
-        //filter tags by id
-        if (!selectedTags.value.length) {
-          const ss:number[] = []
-          for(let [idx, tag] of tags.value.entries()) {
-            
-            if (settings.value.selectedTags.includes(tag.id)) {
-              ss.push(idx)
-            }
-          }
-          selectedTags.value = ss
-        }
+        await fetchTags()
         break;
       default:
         break;
     }
-
-
-
-
 
     /* if selected gallery present move it on top of list
       if (settings.value.selectedGallery !== "") {
@@ -137,7 +164,7 @@ export default function useSidenav() {
   }
 
   // events
-  function selectGallery(gallery_id: string) {
+  function handleSelectGallery(gallery_id: string) {
     settings.value.favoriteImagesMode = false;
     settings.value.selectedGallery = gallery_id;
     settings.value.showMode = galleries.value.find(
@@ -148,7 +175,7 @@ export default function useSidenav() {
   }
 
   // selects certain gallery show mode
-  function selectGalleryShowMode(
+  function handleSelectGalleryShowMode(
     gallery_id: string,
     showMode: GalleryShowMode
   ) {
@@ -159,11 +186,11 @@ export default function useSidenav() {
     //settings.value.showMode = showMode;
   }
 
-  function selectFavShowMode(showMode: GalleryShowMode) {
+  function handleSelectFavShowMode(showMode: GalleryShowMode) {
     favGallery.value.showMode = showMode
   }
 
-  function selectFav() {
+  function handleSelectFav() {
     settings.value.favoriteImagesMode = true;
     settings.value.showMode = favGallery.value.showMode
     settings.value.selectedGallery = ""
@@ -176,6 +203,13 @@ export default function useSidenav() {
     galleries.value = sortGalleries(galleries.value);
   }
 
+  function resetSelectedTags() {
+    selectedTags.value = []
+  }
+
+  function clear() {
+    galleries.value = []
+  }
   async function saveSettings() {
     
     if(settings.value.selectedGallery) {
@@ -193,17 +227,19 @@ export default function useSidenav() {
   }
 
   return {
-    settings,
-    galleries,
-    favGallery,
-    selectGallery,
-    selectGalleryShowMode,
-    selectFavShowMode,
-    selectFav,
+    settings: readonly(settings),
+    galleries: readonly(galleries),
+    favGallery: readonly(favGallery),
+    handleSelectGallery,
+    handleSelectGalleryShowMode,
+    handleSelectFavShowMode,
+    handleSelectFav,
     fetchData,
+    clear,
+    resetSelectedTags,
     saveSettings,
     pinUnpinGallery,
-    tags,
+    tags: readonly(tags),
     selectedTags,
     currentTab,
     filterShowMode,

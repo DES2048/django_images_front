@@ -10,8 +10,7 @@ import GalleryActions from "./GalleryActions.vue";
 import useSidenav from "@/composables/useSidenav";
 import { useUiStore } from "@/stores/ui";
 import { mdiCog, mdiPlusCircleOutline, mdiPlusCircle, mdiFilter } from '@mdi/js'
-import { tagsApi } from "@/api";
-import { GalleryShowMode, type TagWithCount } from "@/models";
+import { GalleryShowMode } from "@/models";
 import ShowModeSwitcher from "./ShowModeSwitcher.vue";
 
 // props
@@ -31,13 +30,15 @@ const {
   favGallery,
   fetchData,
   saveSettings,
-  selectGallery,
-  selectGalleryShowMode,
-  selectFav,
-  selectFavShowMode,
+  clear,
+  handleSelectGallery,
+  handleSelectGalleryShowMode,
+  handleSelectFav,
+  handleSelectFavShowMode,
   pinUnpinGallery,
   currentTab,
   filterShowMode,
+  resetSelectedTags,
 } = useSidenav();
 
 //const filterShowMode = ref(DEFAULT_SHOW_MODE)
@@ -73,30 +74,11 @@ watch(
 
       window.addEventListener("click", clickOutsideEventListener);
     } else {
-      galleries.value = [];
+      clear()
       window.removeEventListener("click", clickOutsideEventListener);
     }
   }
 );
-
-watch(currentTab, async () => {
-  if (currentTab.value === "galleries") {
-    galleries.value.length > 0 || await fetchData()
-  } else if (currentTab.value === "filter") {
-    tags.value || (tags.value = await tagsApi.list("*", settings.value.showMode) as TagWithCount[])
-    if (!selectedTags.value.length) {
-      const ss: number[] = []
-      for (let [idx, tag] of tags.value.entries()) {
-
-        if (settings.value.selectedTags.includes(tag.id)) {
-          ss.push(idx)
-        }
-      }
-      selectedTags.value = ss
-    }
-
-  }
-})
 
 async function handleSettingsSave() {
   await saveSettings();
@@ -136,19 +118,19 @@ function handleAddGalllery() {
         <v-window v-model="currentTab">
           <v-window-item value="galleries">
             <!-- FAV-->
-            <a href="#" :class="{ selected: settings.favoriteImagesMode }" @click="selectFav">
+            <a href="#" :class="{ selected: settings.favoriteImagesMode }" @click="handleSelectFav">
               <span>Fav</span>
-              <ShowModeSwitcher :show-mode="favGallery.showMode" @show-mode-click="selectFavShowMode" />
+              <ShowModeSwitcher :show-mode="favGallery.showMode" @show-mode-click="handleSelectFavShowMode" />
             </a>
             <a v-for="gallery in galleries" :key="gallery.slug" :class="{
               selected: !settings.favoriteImagesMode &&
                 gallery.slug === settings.selectedGallery,
             }">
-              <span @click="selectGallery(gallery.slug)" class="gallery-title">
+              <span @click="handleSelectGallery(gallery.slug)" class="gallery-title">
                 {{ gallery.title }}<sup v-if="gallery.isFilter">
                   <v-icon :icon="mdiFilter" color="red" size="small" @click="uiStore.showGalleryFilter(gallery.slug)" />
                 </sup></span>
-              <GalleryActions :show-mode="gallery.showMode" :gallery="gallery" @show-mode-click="selectGalleryShowMode"
+              <GalleryActions :show-mode="gallery.showMode" :gallery="gallery" @show-mode-click="handleSelectGalleryShowMode"
                 @pin-unpin-click="pinUnpinGallery" />
             </a>
           </v-window-item>
@@ -169,7 +151,7 @@ function handleAddGalllery() {
                 <h3>Tags</h3>
               <v-divider></v-divider>
               <v-row>
-                <v-col><v-btn @click="selectedTags = []">Reset</v-btn></v-col>
+                <v-col><v-btn @click="resetSelectedTags">Reset</v-btn></v-col>
               </v-row>
             <v-chip-group v-model="selectedTags" selected-class="text-primary" column multiple>
               <v-icon :icon="mdiPlusCircle" @click="uiStore.openAddEditTag(true)" />
