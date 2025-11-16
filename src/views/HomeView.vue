@@ -3,7 +3,6 @@ import ButtonsPanel from "@/components/ButtonsPanel.vue";
 import ImageDrawer from "@/components/ImageDrawer.vue";
 import ImageTopPanel from "@/components/ImageTopPanel.vue"
 import Sidenav from "@/components/Sidenav2.vue";
-import SettingsDialog from "@/components/dialogs/SettingsDialog.vue";
 import RenameImageDialog from "@/components/dialogs/RenameImageDialog.vue";
 import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
@@ -158,7 +157,6 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     <div class="container">
       <component :is="dialog.component" v-for="dialog in dialogStore.dialogs.values()" :key="dialog.guid" v-bind="{ guid: dialog.guid, ...dialog.props }"></component>
       <Sidenav v-model="uiStore.openSidenav" />
-      <SettingsDialog v-if="uiStore.openSettings"/>
       <RenameImageDialog v-if="uiStore.openRenameImage" />
       <CopyMoveToGalleryDialog v-if="uiStore.openCopyMoveToGallery" />
       <GoToImageDialog v-if="uiStore.openGoToImage" />

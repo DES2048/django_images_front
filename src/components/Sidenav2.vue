@@ -9,9 +9,18 @@ import { nextTick, ref, watch } from "vue";
 import GalleryActions from "./GalleryActions.vue";
 import useSidenav from "@/composables/useSidenav";
 import { useUiStore } from "@/stores/ui";
-import { mdiCog, mdiPlusCircleOutline, mdiPlusCircle, mdiFilter } from '@mdi/js'
-import { GalleryShowMode } from "@/models";
+import { useDialogStore } from "@/stores";
+import {
+  mdiCog,
+  mdiPlusCircleOutline,
+  mdiPlusCircle,
+  mdiFilter,
+} from "@mdi/js";
+import { tagsApi } from "@/api";
+import { type TagWithCount } from "@/models";
+import { GalleryShowMode } from "@/models/settings";
 import ShowModeSwitcher from "./ShowModeSwitcher.vue";
+import SettingsDialog from "./dialogs/SettingsDialog.vue";
 
 // props
 const props = defineProps<{
@@ -43,7 +52,8 @@ const {
 
 //const filterShowMode = ref(DEFAULT_SHOW_MODE)
 
-const uiStore = useUiStore()
+const uiStore = useUiStore();
+const dialogStore = useDialogStore()
 
 // refs
 const sidenavRef = ref<HTMLElement | null>(null);
@@ -87,7 +97,7 @@ async function handleSettingsSave() {
 
 function handleOpenSettings() {
   emit("update:modelValue", false);
-  uiStore.openSettings = true;
+  dialogStore.createDialog(SettingsDialog)
 }
 function handleAddGalllery() {
   uiStore.addMode = true
