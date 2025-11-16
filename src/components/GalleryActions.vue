@@ -3,9 +3,14 @@
 import type { Gallery, GalleryShowMode } from '@/models';
 import ToggleButton from './ToggleButton.vue';
 import ShowModeSwitcher from './ShowModeSwitcher.vue'
-import { mdiDotsVertical, mdiFilter, mdiPencil, mdiTrashCan } from '@mdi/js';
+import { mdiDotsVertical, mdiFilter, mdiPencil, mdiArrowUpDown, mdiTrashCan } from '@mdi/js';
 import { useUiStore } from '@/stores/ui';
+import { useDialogStore } from "@/stores";
 import api from '@/api';
+import type { GalleryShowMode } from "@/models/settings";
+import { getGalleriesSettings, saveGallerySettings } from "@/storage";
+import SortDialog from "./dialogs/SortDialog.vue";
+import { ref } from "vue";
 
 // props
 const props = defineProps<{
@@ -15,14 +20,34 @@ const props = defineProps<{
 
 // stores
 const uiStore = useUiStore()
+const dialogStore = useDialogStore()
 
 // data
+  const sortFields =ref(["-mod_time", "mod_time", "name", "-name"])
+  const sortField = ref("")
+
 // emits
 const emit = defineEmits<{
     (e: 'showModeClick', gallerySlug: string, showMode: GalleryShowMode): void
     (e: 'pinUnpinClick', gallerySlug: string, pin: boolean): void
 }>()
 
+function openSortDialog() {
+
+  const gallsSettings = getGalleriesSettings();
+
+  sortField.value = gallsSettings[props.gallery.slug]?.sorting || "-mod_time"
+
+  dialogStore.createDialog(SortDialog, {
+    selField: sortField.value,
+    sortFields: sortFields.value,
+      onSubmit: (field) => {
+      saveGallerySettings(props.gallery.slug, {
+          sorting: field
+      }) 
+      }
+  })
+}
 function handleEditGallery() {
     uiStore.addMode = false
     uiStore.editGalleryId = props.gallery.slug
@@ -57,6 +82,12 @@ async function handleDeleteGallery() {
                         <v-icon :icon="mdiFilter"></v-icon>
                     </template>
                     <v-list-item-title>Filter</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="openSortDialog">
+                    <template v-slot:prepend>
+                        <v-icon :icon="mdiArrowUpDown"></v-icon>
+                    </template>
+                    <v-list-item-title>Sort</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="handleDeleteGallery">
                     <template v-slot:prepend>
