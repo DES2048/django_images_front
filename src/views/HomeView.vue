@@ -9,6 +9,7 @@ import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/stores/settings";
+import { useDialogStore } from "@/stores";
 import { useUiStore } from '@/stores/ui'
 import type { PickerSettings } from "@/models";
 import CopyMoveToGalleryDialog from "@/components/dialogs/CopyMoveToGalleryDialog.vue";
@@ -25,6 +26,7 @@ const { images, randomMode, imagesFilter, imagesLoaded } = storeToRefs(imagesSto
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
 const uiStore = useUiStore()
+const dialogStore = useDialogStore()
 
 // getters
 const { nextImage, prevImage, deleteCurrentImage } = imagesStore;
@@ -154,6 +156,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
 <template>
   <main>
     <div class="container">
+      <component :is="dialog.component" v-for="dialog in dialogStore.dialogs.values()" :key="dialog.guid" v-bind="{ guid: dialog.guid, ...dialog.props }"></component>
       <Sidenav v-model="uiStore.openSidenav" />
       <SettingsDialog v-if="uiStore.openSettings"/>
       <RenameImageDialog v-if="uiStore.openRenameImage" />
