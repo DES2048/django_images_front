@@ -176,41 +176,18 @@ export const useImagesStore = defineStore("images", () => {
     }
     if (!currentImage.value) return;
 
-    const selGallery = settings.value.favoriteImagesMode
-      ? (currentImage.value as FavImageInfo).gallery
-      : settings.value.selectedGallery;
-
     const apiCall = mark ? api.markImage : api.unmarkImage;
 
     const img_info = await apiCall.call(
       api,
-      selGallery,
+      currentGallery.value,
       currentImage.value.name
     );
 
-    const filterShowMode = mark
-      ? GalleryShowMode.Unmarked
-      : GalleryShowMode.Marked;
-
-    if (
-      settings.value.showMode == filterShowMode &&
-      !settings.value.favoriteImagesMode
-    ) {
-      images.value.splice(currentImageIndex.value, 1);
-      if (randomMode.value) {
-        randomImage();
-      } else {
-        // move to next if possible
-        if (currentImageIndex.value === images.value.length) {
-          prevImage();
-        }
-      }
-    } else {
-      images.value[currentImageIndex.value] = {
+    images.value[currentImageIndex.value] = {
         ...images.value[currentImageIndex.value],
         ...img_info,
-      };
-    }
+    };
   }
 
   async function markCurrentImage() {
