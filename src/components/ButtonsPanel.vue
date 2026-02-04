@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useImagesStore } from '@/stores/images';
-import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
 import { mdiMenu, mdiShuffleVariant, mdiDotsVertical, mdiStar, mdiStarOutline } from '@mdi/js'
@@ -9,14 +8,12 @@ import { useDisplay } from 'vuetify'
 
 // store
 const imagesStore = useImagesStore()
-const settingsStore = useSettingsStore()
 const uiStore = useUiStore()
 const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
   deleteCurrentImage, markCurrentImage, unmarkCurrentImage, addCurrentImageToFav,
   deleteCurrentImageFromFav } = imagesStore
 
 const { randomMode, currentImage, imagesLoaded } = storeToRefs(imagesStore);
-const { settings } = storeToRefs(settingsStore)
 
 //const shuffleIcon = new URL("../assets/icons8-shuffle-30.png", import.meta.url).href;
 
@@ -49,9 +46,7 @@ function handleRandomImage() {
 }
 
 async function handleDeleteImage() {
-  const confirmMsg = settings.value.favoriteImagesMode ?
-    "Are u sure for delete image from fav?"
-    : "Are you sure for delete this image?"
+  const confirmMsg = "Are you sure for delete this image?"
   if (confirm(confirmMsg)) {
     await deleteCurrentImage()
   }
@@ -100,7 +95,7 @@ function handleOpenMoveToGallery() {
     <a href="#" class="btn-panel" @click="prevImage" v-if="!mobile">&lt;</a>
     <a href="#" class="btn-panel" @click="nextImage" v-if="!mobile">&gt;</a>
     <a href="#" class="btn-panel" @click="lastImage">&gt;&gt;</a>
-    <v-icon v-if="!settings.favoriteImagesMode" v-bind="favIconProps" 
+    <v-icon  v-bind="favIconProps"
       @click="handleFavImage"/>
     <a href="#" class="btn-panel" @click="handleDeleteImage">&#10006;</a>
     <a href="#" class="btn-panel" :class="{ 'toggle-btn': markToggle }" @click="handleMarkUnmark">&#10004;</a>

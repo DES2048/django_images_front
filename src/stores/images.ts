@@ -261,16 +261,10 @@ export const useImagesStore = defineStore("images", () => {
       return;
     }
 
-    // FIXME check response
-    if (settingsStore.settings.favoriteImagesMode) {
-      const img = currentImage.value as FavImageInfo;
-      await api.deleteImageFromFav(img.gallery, img.name);
-    } else {
       await api.deleteImage(
         currentGallery.value,
         currentImage.value.name
       );
-    }
 
     images.value.splice(currentImageIndex.value, 1);
   }
@@ -278,12 +272,10 @@ export const useImagesStore = defineStore("images", () => {
   // fav
   async function addCurrentImageToFav() {
     if (
-      settingsStore.settings &&
-      settingsStore.settings.selectedGallery &&
-      currentImage.value
+      settingsStore.settings && currentImage.value
     ) {
       await api.addImageToFav(
-        settingsStore.settings.selectedGallery,
+        currentGallery.value,
         currentImage.value.name
       );
       currentImage.value.is_fav = true;
@@ -292,12 +284,10 @@ export const useImagesStore = defineStore("images", () => {
 
   async function deleteCurrentImageFromFav() {
     if (
-      settingsStore.settings &&
-      settingsStore.settings.selectedGallery &&
-      currentImage.value
+      settingsStore.settings && currentImage.value
     ) {
       await api.deleteImageFromFav(
-        settingsStore.settings.selectedGallery,
+        currentGallery.value,
         currentImage.value.name
       );
       currentImage.value.is_fav = false;
