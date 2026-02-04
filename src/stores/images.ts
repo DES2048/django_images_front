@@ -84,8 +84,14 @@ export const useImagesStore = defineStore("images", () => {
           compareValues<number>(a["add_to_fav_date"], b["add_to_fav_date"], true)
         );
       } else {
+        // sorting regular gallery
+        const gallSettings = await getGalleriesSettings()
+        const sortSet = gallSettings[set.selectedGallery]?.sorting || "-mod_time"
+        const invert = sortSet[0] == '-' ? true : false;
+        const sortField = sortSet[0] == '-' ? sortSet.substring(1) : sortSet;
+
         (imagesData as ImageInfo[]).sort((a, b) =>
-          compareValues<number>(a.mod_time, b.mod_time, true)
+          compareValues<number>(a[sortField], b[sortField], invert)
         );
         //(imagesData as ImageInfo[]).sort((a, b) => b.mod_time - a.mod_time);
       }

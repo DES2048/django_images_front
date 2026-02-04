@@ -22,7 +22,8 @@ export interface PickerSettings {
   export interface GallerySettings {
     lastShowMode: GalleryShowMode
     shufflePicsWhenLoaded: boolean,
-    filter?: GalleryFilter
+    filter?: GalleryFilter,
+    sorting?: string
   }
   
   // settings for every gallery(as key) for saving in local storage
