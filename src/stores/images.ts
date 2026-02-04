@@ -259,7 +259,7 @@ export const useImagesStore = defineStore("images", () => {
       await api.deleteImageFromFav(img.gallery, img.name);
     } else {
       await api.deleteImage(
-        settingsStore.settings!.selectedGallery,
+        currentGallery.value,
         currentImage.value.name
       );
     }
