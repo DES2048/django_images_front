@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { useUiStore } from '@/stores/ui';
 import { useImagesStore } from '@/stores/images';
+import { useDialog } from '@/composables/Dialog';
 import { ref, watch } from 'vue';
 import type { FavImageInfo, ImageInfo } from '@/models';
 
+const props = defineProps<{
+  guid:string
+}>()
 
 // stores
-const uiStore = useUiStore()
 const imagesStore = useImagesStore()
 
 // data
+const {isOpened, close } = useDialog(props.guid)
 const isGoToIndex = ref(true)
 const newImageIndex = ref(1)
 const imageName = ref("")
@@ -41,22 +44,21 @@ function handle() {
             newImageIndex.value <= imagesStore.images.length
         ) {
             imagesStore.goToIndex(newImageIndex.value - 1);
-            uiStore.openGoToImage = false;
+          close()
         }
     } else {
         const imgIndex = imagesStore.images.findIndex(({name})=>name === imageName.value)
         if (imgIndex>=0) {
             imagesStore.goToIndex(imgIndex)
         }
-        uiStore.openGoToImage = false
+        close()
     }
 
 }
 </script>
 
 <template>
-    <v-dialog v-model="uiStore.openGoToImage">
-        <template v-slot:default="{ isActive }">
+    <v-dialog v-model="isOpened">
             <v-form @submit.prevent="handle">
                 <v-card>
                     <template v-slot:title>
@@ -70,11 +72,10 @@ function handle() {
                     <v-card-actions>
                         <v-spacer></v-spacer>
 
-                        <v-btn text="Close" @click="isActive.value = false"></v-btn>
+                        <v-btn text="Close" @click="close"></v-btn>
                         <v-btn text="OK" @click="handle"></v-btn>
                     </v-card-actions>
                 </v-card>
             </v-form>
-        </template>
     </v-dialog>
 </template>

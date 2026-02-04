@@ -3,7 +3,6 @@ import ButtonsPanel from "@/components/ButtonsPanel.vue";
 import ImageDrawer from "@/components/ImageDrawer.vue";
 import ImageTopPanel from "@/components/ImageTopPanel.vue"
 import Sidenav from "@/components/Sidenav2.vue";
-import RenameImageDialog from "@/components/dialogs/RenameImageDialog.vue";
 import { onMounted, ref, watch } from "vue";
 import { useImagesStore } from "@/stores/images";
 import { storeToRefs } from "pinia";
@@ -12,7 +11,6 @@ import { useDialogStore } from "@/stores";
 import { useUiStore } from '@/stores/ui'
 import type { PickerSettings } from "@/models";
 import CopyMoveToGalleryDialog from "@/components/dialogs/CopyMoveToGalleryDialog.vue";
-import GoToImageDialog from "@/components/dialogs/GoToImageDialog.vue";
 import AddEditGalleryDialog from "@/components/dialogs/AddEditGalleryDialog.vue";
 import ImageTagsDialog from "@/components/dialogs/ImageTagsDialog.vue";
 import AddEditTagDialog from "@/components/dialogs/AddEditTagDialog.vue";
@@ -157,9 +155,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     <div class="container">
       <component :is="dialog.component" v-for="dialog in dialogStore.dialogs.values()" :key="dialog.guid" v-bind="{ guid: dialog.guid, ...dialog.props }"></component>
       <Sidenav v-model="uiStore.openSidenav" />
-      <RenameImageDialog v-if="uiStore.openRenameImage" />
       <CopyMoveToGalleryDialog v-if="uiStore.openCopyMoveToGallery" />
-      <GoToImageDialog v-if="uiStore.openGoToImage" />
       <AddEditGalleryDialog v-if="uiStore.openAddEditGallery" />
       <ImageTagsDialog v-if="uiStore.openImageTags" />
       <AddEditTagDialog v-if="uiStore._openAddEditTag" />

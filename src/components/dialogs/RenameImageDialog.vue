@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import { useUiStore } from '@/stores/ui'
 import { useImagesStore } from '@/stores/images';
-
-import { ref, watch } from 'vue';
+import { useDialog } from '@/composables/Dialog';
+import { onBeforeMount, ref } from 'vue';
 import { ValidationError } from '@/api/errors';
 
-const uiStore = useUiStore()
+
+const props = defineProps<{
+  guid: string,
+  imageName?: string
+}>()
+
 const imagesStore = useImagesStore()
 
 const newImageName = ref("");
 const nameErrors = ref<string[]>()
 const inProcess = ref(false)
+const { isOpened,close } = useDialog(props.guid)
 
-watch(() => uiStore.openRenameImage, (value) => {
-    if (value) {
-        newImageName.value = imagesStore.currentImage.name
-    }
-}, { immediate: true })
+onBeforeMount(()=> {
+  newImageName.value = imagesStore.currentImage.name
+})
 
 function handleFocus(event: FocusEvent) {
     const input = (event.target as HTMLInputElement);
@@ -34,8 +37,8 @@ function handleFocus(event: FocusEvent) {
 }
 async function handleRename() {
 
-    if (newImageName.value === imagesStore.currentImage.name) {
-        return;
+    if (newImageName.value === props.imageName) {
+        close()
     }
     if (!newImageName.value.trim()) {
         return;
@@ -44,7 +47,7 @@ async function handleRename() {
     try {
         inProcess.value = true
         await imagesStore.renameCurrentImage(newImageName.value);
-        uiStore.openRenameImage = false
+      close()
     } catch (error) {
         if (error instanceof ValidationError) {
             nameErrors.value = error.fieldErrors["new_name"]
@@ -59,8 +62,7 @@ async function handleRename() {
 </script>
 
 <template>
-    <v-dialog v-model="uiStore.openRenameImage">
-        <template v-slot:default="{ isActive }">
+    <v-dialog v-model="isOpened">
             <v-form @submit.prevent="handleRename">
                 <v-card title="Input new name">
                     <v-text-field v-model="newImageName" :rules="[(v) => !!v || 'required']" autofocus
@@ -69,11 +71,10 @@ async function handleRename() {
                     <v-card-actions>
                         <v-spacer />
 
-                        <v-btn text="Close" @click="isActive.value = false" />
+                        <v-btn text="Close" @click="close" />
                         <v-btn text="Save" @click="handleRename" />
                     </v-card-actions>
                 </v-card>
             </v-form>
-        </template>
     </v-dialog>
 </template>
