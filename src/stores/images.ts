@@ -32,6 +32,21 @@ export const useImagesStore = defineStore("images", () => {
       : settings.value.selectedGallery
   })
 
+  const _images = computed(() => {
+    let ret = []
+    const filter = imageNameFilter.value.toLowerCase()
+
+    if (filter) {
+      const filtered = images.value.filter(img => img.name.toLowerCase().includes(filter));
+      ret = filtered
+    } else ret = images.value;
+    // fix currentImageIndex
+    let idx = ret.findIndex(img => img.name == currentImage.value?.name);
+    if (idx < 0) idx = 0;
+    currentImageIndex.value = idx;
+    return ret;
+  });
+
   // actions
   function resetImages() {
     images.value = [];
