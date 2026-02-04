@@ -4,6 +4,7 @@ import { ref, computed } from "vue";
 import api from "@/api";
 import { useSettingsStore } from "./settings";
 import { compareValues, shuffleArray } from "@/utils";
+import { getGalleriesSettings } from "@/storage";
 
 export interface ImagesFilter {
   selectedTags?: number[]
@@ -16,6 +17,7 @@ export const useImagesStore = defineStore("images", () => {
   const randomMode = ref(false);
   const imagesLoaded = ref(false);
   const imagesFilter = ref<ImagesFilter>({})
+  const imageNameFilter = ref("")
 
   // imported stores
   const settingsStore = useSettingsStore();
@@ -303,13 +305,14 @@ export const useImagesStore = defineStore("images", () => {
   }
 
   return {
-    images,
+    images:_images,
     currentImageIndex,
     imagesLoaded,
     imagesFilter,
     currentImage,
     currentGallery,
     randomMode,
+    imageNameFilter,
     resetImages,
     fetchImages,
     goToIndex,

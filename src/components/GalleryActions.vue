@@ -7,7 +7,6 @@ import { mdiDotsVertical, mdiFilter, mdiPencil, mdiArrowUpDown, mdiTrashCan } fr
 import { useUiStore } from '@/stores/ui';
 import { useDialogStore } from "@/stores";
 import api from '@/api';
-import type { GalleryShowMode } from "@/models/settings";
 import { getGalleriesSettings, saveGallerySettings } from "@/storage";
 import SortDialog from "./dialogs/SortDialog.vue";
 import { ref } from "vue";
