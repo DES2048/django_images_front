@@ -30,8 +30,9 @@ function editImageNameFilter() {
 <template>
   <div class="top-panel" v-if="uiStore.panelsVisible && images.length">
     <span @click="openGoToImage">
-      ({{ currentImageIndex + 1 }}/{{ images.length }}) {{ currentImage?.name || "" }}
+      ({{ currentImageIndex + 1 }}/{{ images.length }})
     </span>
+    <span class="image-name">&nbsp;{{ currentImage?.name || "" }}</span>
     <v-icon :icon="mdiPencil" @click="openRenameImage"></v-icon>
     <v-icon :icon="mdiFilter" @click="editImageNameFilter" />
     <v-icon :icon="mdiTag" @click="uiStore.openImageTags = true" />
@@ -39,6 +40,15 @@ function editImageNameFilter() {
 </template>
 
 <style scoped>
+.image-name {
+  overflow: hidden;
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  min-width: 0;
+  white-space:nowrap;
+  text-overflow: ellipsis;
+}
 .top-panel {
     z-index: 1;
     display: flex;
