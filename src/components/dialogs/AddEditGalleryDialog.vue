@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watchEffect } from 'vue';
-import { useUiStore } from '@/stores/ui';
+import { computed, onBeforeMount, reactive, ref } from 'vue';
+import { useDialog } from '@/composables/Dialog';
 import api from '@/api';
 import { ValidationError, validationErrorHandler, type ToFieldErrors } from '@/api/errors';
 
 type AddGalleryErrors = ToFieldErrors<Omit<typeof data.value, "pinned">>
 
-const uiStore = useUiStore()
+const props = defineProps<{
+  guid: string,
+  galleryId?: string,
+  addMode: boolean,
+}>()
+
+const { isOpened,close } = useDialog(props.guid)
+
 let data = ref({
     title: "",
     slug: "",
@@ -22,12 +29,12 @@ let errors = reactive<AddGalleryErrors>({
 })
 
 
-const dialogTitle = computed(() => uiStore.addMode ? "Add gallery" : "Edit gallery")
-const submitButtonText = computed(() => uiStore.addMode ? "Add" : "Save")
+const dialogTitle = computed(() => props.addMode ? "Add gallery" : "Edit gallery")
+const submitButtonText = computed(() => props.addMode ? "Add" : "Save")
 
-watchEffect(async () => {
-    if (uiStore.openAddEditGallery && !uiStore.addMode) {
-        data.value = await api.getGallery(uiStore.editGalleryId)
+onBeforeMount(async () => {
+    if (!props.addMode) {
+        data.value = await api.getGallery(props.galleryId!)
     }
 })
 
@@ -35,7 +42,7 @@ function requiredRule(v: any) {
     return !!v || "Required"
 }
 
-const rules = uiStore.addMode ? [requiredRule] : []
+const rules = props.addMode ? [requiredRule] : []
 
 function handleErrors(err: unknown) {
     if (err instanceof ValidationError) {
@@ -45,12 +52,12 @@ function handleErrors(err: unknown) {
 async function handle() {
     try {
         inProgress.value = true
-        if (uiStore.addMode) {
+        if (props.addMode) {
             await api.addGallery(data.value)
         } else {
-            await api.updateGallery(uiStore.editGalleryId, data.value)   
+            await api.updateGallery(props.galleryId!, data.value)   
         }
-        uiStore.openAddEditGallery = false
+        close()
     } catch (err) {
         handleErrors(err)
     } finally {
@@ -60,22 +67,22 @@ async function handle() {
 </script>
 
 <template>
-    <v-dialog v-model="uiStore.openAddEditGallery">
-        <template v-slot:default="{ isActive }">
+    <v-dialog v-model="isOpened">
+        <template v-slot:default>
             <v-form @submit.prevent="handle">
                 <v-card :title="dialogTitle">
                     <v-text-field v-model="data.title" :rules="rules" autofocus :error-messages="errors.title"
                         label="Title">
                     </v-text-field>
                     <v-text-field v-model="data.slug" :rules="rules" :error-messages="errors.slug" label="Id"
-                        v-if="uiStore.addMode">
+                        v-if="props.addMode">
                     </v-text-field>
                     <v-text-field v-model="data.dir_path" :rules="rules" :error-messages="errors.dir_path" label="Path">
                     </v-text-field>
                     <v-checkbox v-model="data.pinned" label="Pinned" />
                     <v-card-actions>
                         <v-spacer />
-                        <v-btn text="Close" @click="isActive.value = false" />
+                        <v-btn text="Close" @click="close" />
                         <v-btn :text="submitButtonText" @click="handle" />
                     </v-card-actions>
                 </v-card>

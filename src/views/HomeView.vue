@@ -10,11 +10,6 @@ import { useSettingsStore } from "@/stores/settings";
 import { useDialogStore } from "@/stores";
 import { useUiStore } from '@/stores/ui'
 import type { PickerSettings } from "@/models";
-import CopyMoveToGalleryDialog from "@/components/dialogs/CopyMoveToGalleryDialog.vue";
-import AddEditGalleryDialog from "@/components/dialogs/AddEditGalleryDialog.vue";
-import ImageTagsDialog from "@/components/dialogs/ImageTagsDialog.vue";
-import AddEditTagDialog from "@/components/dialogs/AddEditTagDialog.vue";
-import GalleryFilterDialog from "@/components/dialogs/GalleryFilterDialog.vue";
 import { getGalleriesSettings } from "@/storage";
 
 // stores
@@ -155,11 +150,6 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     <div class="container">
       <component :is="dialog.component" v-for="dialog in dialogStore.dialogs.values()" :key="dialog.guid" v-bind="{ guid: dialog.guid, ...dialog.props }"></component>
       <Sidenav v-model="uiStore.openSidenav" />
-      <CopyMoveToGalleryDialog v-if="uiStore.openCopyMoveToGallery" />
-      <AddEditGalleryDialog v-if="uiStore.openAddEditGallery" />
-      <ImageTagsDialog v-if="uiStore.openImageTags" />
-      <AddEditTagDialog v-if="uiStore._openAddEditTag" />
-      <GalleryFilterDialog v-if="uiStore.openGalleryFilter" />
       <div class="error-message" v-if="error">{{ error }}</div>
       <ImageTopPanel />
       <ImageDrawer v-if="!error && images.length" v-touch="vTouchSettings" />

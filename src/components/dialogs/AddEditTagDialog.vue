@@ -5,11 +5,16 @@ import { reactive, ref } from 'vue';
 import { resetFieldErrors, validationErrorHandler, type ToFieldErrors, ValidationError } from '@/api/errors';
 import { tagsApi } from '@/api';
 import useAddEdit from '@/composables/useAddEdit';
-import { storeToRefs } from 'pinia';
+import { useDialog } from '@/composables/Dialog';
+
+const props = defineProps<{
+  guid:string,
+  addMode: boolean,
+}>()
 
 // stores
-const uiStore = useUiStore()
-const {addMode} = storeToRefs(uiStore)
+const {isOpened, close } = useDialog(props.guid)
+
 // data
 const addTagPayload = ref<AddTagPayload>({
     name: ""
@@ -23,22 +28,22 @@ const {title, submitButtonText} = useAddEdit({
         add: "Add tag",
         edit: "Edit tag"
     },
-    isAddMode: addMode
+    isAddMode: ref(props.addMode)
 })
 
 async function handleAddTag() {
     resetFieldErrors(addTagErrors)
-    const tagNameClear = addTagPayload.value.name.trim()
-    if (!tagNameClear) {
+    const name = addTagPayload.value.name
+    if (!name) {
         addTagErrors.name.push("required")
         return
     }
 
     try {
         await tagsApi.add({
-        name: tagNameClear
+        name,
     })
-    uiStore.openAddEditTag(false)
+    close()
     } catch(err) {
         if( err instanceof ValidationError) {
             validationErrorHandler(err, addTagErrors)
@@ -48,17 +53,17 @@ async function handleAddTag() {
 }
 </script>
 <template>
-    <v-dialog v-model="uiStore._openAddEditTag">
-        <template v-slot:default="{ isActive }">
+    <v-dialog v-model="isOpened">
+        <template v-slot:default>
             <v-form @submit.prevent="handleAddTag">
                 <v-card :title="title">
-                    <v-text-field v-model="addTagPayload.name" :rules="[(v) => !!v || 'required']" autofocus
+                    <v-text-field v-model.trim="addTagPayload.name" :rules="[(v:string) => !!v || 'required']" autofocus
                         :error-messages="addTagErrors.name">
                     </v-text-field>
                     <v-card-actions>
                         <v-spacer />
 
-                        <v-btn text="Close" @click="isActive.value = false" />
+                        <v-btn text="Close" @click="close" />
                         <v-btn :text="submitButtonText" @click="handleAddTag" />
                     </v-card-actions>
                 </v-card>

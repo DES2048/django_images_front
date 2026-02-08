@@ -2,32 +2,38 @@
 /* __placeholder__ */
 import { tagsApi } from '@/api';
 import { GalleryShowMode, type TagWithCount } from '@/models';
-import { useUiStore } from '@/stores/ui'
+import { useDialog } from '@/composables/Dialog';
 import { useImagesStore } from '@/stores/images';
-import { ref, watchEffect } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { getGalleriesSettings, saveGallerySettings } from '@/storage';
 import { useSettingsStore } from '@/stores/settings';
 
+const props = defineProps<{
+  guid: string,
+  galleryId: string
+}>()
+
 // stores
-const uiStore = useUiStore()
 const imagesStore = useImagesStore()
 const settingsStore = useSettingsStore()
+const { isOpened,close } = useDialog(props.guid)
 
 // data
 const tags = ref<TagWithCount[]>([])
 const selectedTags = ref<number[]>([])
 
-watchEffect(async () => {
-    if (uiStore.openGalleryFilter) {
+onBeforeMount(async () => {
         // get gallery show_mode for tags image count stat
-        const show_mode = settingsStore.settings.selectedGallery == uiStore.editGalleryId ?
+  const galleryId = props.galleryId
+
+        const show_mode = settingsStore.settings.selectedGallery == galleryId ?
             settingsStore.settings.showMode : GalleryShowMode.All
 
-        let tagsData = await tagsApi.list(uiStore.editGalleryId, show_mode) as TagWithCount[]
+        let tagsData = await tagsApi.list(galleryId, show_mode) as TagWithCount[]
         
         // get selected tags id from settings
         const galleriesSettings = getGalleriesSettings()
-        const selTags = galleriesSettings[uiStore.editGalleryId]?.filter?.tags
+        const selTags = galleriesSettings[galleryId]?.filter?.tags
 
         tagsData = tagsData.filter((t:TagWithCount)=>t.images_count >0 || (selTags && selTags.includes(t.id)))
         
@@ -44,7 +50,6 @@ watchEffect(async () => {
 
         tags.value = tagsData
 
-    }
 })
 
 function resetTags() {
@@ -53,20 +58,21 @@ function resetTags() {
 
 async function handle() {
     const tagsToUpdate = selectedTags.value.map((t)=>tags.value[t].id)
-    saveGallerySettings(uiStore.editGalleryId, {filter: {
+    saveGallerySettings(props.galleryId, {filter: {
         tags: tagsToUpdate
     }})
     imagesStore.imagesFilter.selectedTags = tagsToUpdate
     //await imagesStore.fetchImages()
-    uiStore.closeGalleryFilter()
+  close()
 }
 
 </script>
 <template>
-    <v-dialog v-model="uiStore.openGalleryFilter">
+    <v-dialog v-model="isOpened">
         <template v-slot:default>
             <v-form @submit.prevent="handle">
                 <v-card title="Gallery filter">
+                    <v-card-text>
                     <v-chip-group v-if="tags.length>0" v-model="selectedTags" selected-class="text-primary" column multiple
                     center-active>
                         <v-chip v-for="tag in tags" :key="tag.id" variant="outlined" filter>
@@ -76,10 +82,11 @@ async function handle() {
                     <div v-else>
                         <h4>No tags for this gallery filter</h4>
                     </div>
+                    </v-card-text>
                     <v-card-actions>
                         <v-spacer />
                         <v-btn text="Reset" @click="resetTags" />
-                        <v-btn text="Close" @click="uiStore.closeGalleryFilter" />
+                        <v-btn text="Close" @click="close" />
                         <v-btn text="Save" @click="handle" />
                     </v-card-actions>
                 </v-card>

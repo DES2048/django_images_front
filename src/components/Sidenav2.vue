@@ -8,7 +8,6 @@
 import { nextTick, ref, watch } from "vue";
 import GalleryActions from "./GalleryActions.vue";
 import useSidenav from "@/composables/useSidenav";
-import { useUiStore } from "@/stores/ui";
 import { useDialogStore } from "@/stores";
 import {
   mdiCog,
@@ -16,11 +15,11 @@ import {
   mdiPlusCircle,
   mdiFilter,
 } from "@mdi/js";
-import { tagsApi } from "@/api";
-import { type TagWithCount } from "@/models";
 import { GalleryShowMode } from "@/models/settings";
 import ShowModeSwitcher from "./ShowModeSwitcher.vue";
 import SettingsDialog from "./dialogs/SettingsDialog.vue";
+import { createAddEditGalleryDialog, createGalleryFilterDialog } from "./dialogs/helpers";
+import AddEditTagDialog from "./dialogs/AddEditTagDialog.vue";
 
 // props
 const props = defineProps<{
@@ -52,7 +51,6 @@ const {
 
 //const filterShowMode = ref(DEFAULT_SHOW_MODE)
 
-const uiStore = useUiStore();
 const dialogStore = useDialogStore()
 
 // refs
@@ -99,9 +97,17 @@ function handleOpenSettings() {
   emit("update:modelValue", false);
   dialogStore.createDialog(SettingsDialog)
 }
+
+function openGalleryFilter(galleryId: string) {
+  createGalleryFilterDialog({ galleryId })
+}
+
+function openAddEditDialog() {
+  emit("update:modelValue", false);
+  dialogStore.createDialog(AddEditTagDialog, {addMode:true})
+}
 function handleAddGalllery() {
-  uiStore.addMode = true
-  uiStore.openAddEditGallery = true
+  createAddEditGalleryDialog({addMode:true})
 }
 </script>
 
@@ -138,10 +144,10 @@ function handleAddGalllery() {
             }">
               <span @click="handleSelectGallery(gallery.slug)" class="gallery-title">
                 {{ gallery.title }}<sup v-if="gallery.isFilter">
-                  <v-icon :icon="mdiFilter" color="red" size="small" @click="uiStore.showGalleryFilter(gallery.slug)" />
+                  <v-icon :icon="mdiFilter" color="red" size="small" @click="openGalleryFilter(gallery.slug)" />
                 </sup></span>
-              <GalleryActions :show-mode="gallery.showMode" :gallery="gallery" @show-mode-click="handleSelectGalleryShowMode"
-                @pin-unpin-click="pinUnpinGallery" />
+              <GalleryActions :show-mode="gallery.showMode" :gallery="gallery"
+                @show-mode-click="handleSelectGalleryShowMode" @pin-unpin-click="pinUnpinGallery" />
             </a>
           </v-window-item>
           <v-window-item value="filter">
@@ -158,17 +164,17 @@ function handleAddGalllery() {
                 </v-col>
               </v-row>
               <v-divider />
-                <h3>Tags</h3>
+              <h3>Tags</h3>
               <v-divider></v-divider>
               <v-row>
                 <v-col><v-btn @click="resetSelectedTags">Reset</v-btn></v-col>
               </v-row>
-            <v-chip-group v-model="selectedTags" selected-class="text-primary" column multiple>
-              <v-icon :icon="mdiPlusCircle" @click="uiStore.openAddEditTag(true)" />
-              <v-chip v-for="tag in tags" :key="tag.id" variant="outlined" filter>
-                {{ tag.images_count }} {{ tag.name }}
-              </v-chip>
-            </v-chip-group>
+              <v-chip-group v-model="selectedTags" selected-class="text-primary" column multiple>
+                <v-icon :icon="mdiPlusCircle" @click="openAddEditDialog" />
+                <v-chip v-for="tag in tags" :key="tag.id" variant="outlined" filter>
+                  {{ tag.images_count }} {{ tag.name }}
+                </v-chip>
+              </v-chip-group>
             </v-container>
           </v-window-item>
         </v-window>

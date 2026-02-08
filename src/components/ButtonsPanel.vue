@@ -2,9 +2,11 @@
 import { computed } from 'vue'
 import { useImagesStore } from '@/stores/images';
 import { useUiStore } from '@/stores/ui';
+import { useDialogStore } from "@/stores";
 import { storeToRefs } from 'pinia';
 import { mdiMenu, mdiShuffleVariant, mdiDotsVertical, mdiStar, mdiStarOutline } from '@mdi/js'
 import { useDisplay } from 'vuetify'
+import CopyMoveToGalleryDialog from './dialogs/CopyMoveToGalleryDialog.vue';
 
 // store
 const imagesStore = useImagesStore()
@@ -12,6 +14,7 @@ const uiStore = useUiStore()
 const { shuffleImages, firstImage, lastImage, prevImage, nextImage,
   deleteCurrentImage, markCurrentImage, unmarkCurrentImage, addCurrentImageToFav,
   deleteCurrentImageFromFav } = imagesStore
+const dialogStore = useDialogStore()
 
 const { randomMode, currentImage, imagesLoaded } = storeToRefs(imagesStore);
 
@@ -70,13 +73,19 @@ async function handleFavImage() {
 }
 
 function handleOpenCopyToGallery() {
-  uiStore.moveToGalleryMode = false
-  uiStore.openCopyMoveToGallery = true
+  dialogStore.createDialog(CopyMoveToGalleryDialog, {
+    galleryId: imagesStore.currentGallery,
+    imageName:imagesStore.currentImage.name,
+    move: false
+  })
 }
 
 function handleOpenMoveToGallery() {
-  uiStore.moveToGalleryMode = true
-  uiStore.openCopyMoveToGallery = true
+  dialogStore.createDialog(CopyMoveToGalleryDialog, {
+    galleryId: imagesStore.currentGallery,
+    imageName:imagesStore.currentImage.name,
+    move: true
+  })
 }
 </script>
 

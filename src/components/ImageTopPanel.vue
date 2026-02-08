@@ -4,8 +4,9 @@ import { useImagesStore } from "@/stores/images";
 import { useDialogStore } from "@/stores";
 import { storeToRefs } from 'pinia';
 import { mdiPencil, mdiTag, mdiFilter } from "@mdi/js";
-import RenameImageDialog from "./dialogs/RenameImageDialog.vue";
+import RenameImageDialog from "@/components/dialogs/RenameImageDialog.vue";
 import GoToImageDialog from "./dialogs/GoToImageDialog.vue";
+import ImageTagsDialog from "./dialogs/ImageTagsDialog.vue";
 
 const uiStore = useUiStore()
 const imagesStore = useImagesStore();
@@ -19,6 +20,10 @@ function openRenameImage() {
 
 function openGoToImage() {
   dialogStore.createDialog(GoToImageDialog)
+}
+
+function openImageTags() {
+  dialogStore.createDialog(ImageTagsDialog)
 }
 
 function editImageNameFilter() {
@@ -35,7 +40,7 @@ function editImageNameFilter() {
     <span class="image-name">&nbsp;{{ currentImage?.name || "" }}</span>
     <v-icon :icon="mdiPencil" @click="openRenameImage"></v-icon>
     <v-icon :icon="mdiFilter" @click="editImageNameFilter" />
-    <v-icon :icon="mdiTag" @click="uiStore.openImageTags = true" />
+    <v-icon :icon="mdiTag" @click="openImageTags" />
   </div>
 </template>
 
